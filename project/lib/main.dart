@@ -9,95 +9,87 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Function & State')),
-        body: const LuasSegitigaPage(),
-      ),
+      home: MainScreen(),
     );
   }
 }
 
-class LuasSegitigaPage extends StatefulWidget {
-  const LuasSegitigaPage({super.key});
-
+class MainScreen extends StatefulWidget {
   @override
-  State<LuasSegitigaPage> createState() => _LuasSegitigaPageState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class _LuasSegitigaPageState extends State<LuasSegitigaPage> {
-  final alasCtrl = TextEditingController();
-  final tinggiCtrl = TextEditingController();
-  double hasil = 0;
+class _MainScreenState extends State<MainScreen> {
+  int _idx = 0;
 
-  double hitungLuas(double alas, double tinggi) {
-    return 0.5 * alas * tinggi;
-  }
-
-  String formatAngka(double angka) {
-    return angka.toStringAsFixed(2);
-  }
-
-  String? validasi(String? value) {
-    if (value == null || value.isEmpty) return 'Wajib diisi';
-    if (double.tryParse(value) == null) return 'Angka saja';
-    return null;
-  }
+  final _halaman = [
+    DaftarKontak(), 
+    Pengaturan(),   
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextFormField(
-            controller: alasCtrl,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Alas (cm)',
-              border: OutlineInputBorder(),
-            ),
-            validator: validasi,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: tinggiCtrl,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Tinggi (cm)',
-              border: OutlineInputBorder(),
-            ),
-            validator: validasi,
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              if (validasi(alasCtrl.text) == null &&
-                  validasi(tinggiCtrl.text) == null) {
-                final luas = hitungLuas(
-                  double.parse(alasCtrl.text),
-                  double.parse(tinggiCtrl.text),
-                );
-                setState(() => hasil = luas);
-              }
-            },
-            child: const Text('Hitung Luas'),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Luas segitiga = ${formatAngka(hasil)} cm²',
-            style: const TextStyle(fontSize: 22),
-            textAlign: TextAlign.center,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Flutter Widget (Bagian 2)'),
+        actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.search))
+        ],
+      ),
+
+      body: _halaman[_idx],
+
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _idx,
+        onTap: (i) => setState(() => _idx = i),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
     );
   }
+}
+
+class DaftarKontak extends StatelessWidget {
+  final List<Map<String, dynamic>> data = [
+    {'nama': 'Budi', 'telp': '081111', 'avatar':  'https://ui-avatars.com/api/?name=Budi&background=random'},
+    {'nama': 'Ani', 'telp': '082222', 'avatar':  'https://ui-avatars.com/api/?name=Ani&background=random'},
+    {'nama': 'Citra', 'telp': '083333', 'avatar': 'https://ui-avatars.com/api/?name=Citra&background=random'},
+  ];
 
   @override
-  void dispose() {
-    alasCtrl.dispose();
-    tinggiCtrl.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: data.length,
+      itemBuilder: (_, i) => Card(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: ListTile(
+          leading: CircleAvatar(
+          backgroundImage: NetworkImage(data[i]['avatar'])),
+          title: Text(data[i]['nama']),
+          subtitle: Text(data[i]['telp']),
+          trailing: const Icon(Icons.arrow_forward_ios),
+          onTap: () {}, 
+        ),
+      ),
+    );
+  }
+}
+
+
+class Pengaturan extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.settings, size: 80, color: Colors.blueGrey),
+          SizedBox(height: 12),
+          Text('Halaman Pengaturan', style: TextStyle(fontSize: 20)),
+        ],
+      ),
+    );
   }
 }
