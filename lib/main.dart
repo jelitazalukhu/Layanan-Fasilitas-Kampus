@@ -168,7 +168,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 23),
             ],
           ),
         ),
