@@ -28,6 +28,11 @@ flutter:
     - assets/poli.jpg
     - assets/kantin.jpg
     - assets/peta.jpg
+    - assets/kampus_usu.jpg
+    - assets/fakultas-ilmu-budaya.webp
+    - assets/auditorium.webp
+    - assets/masjid_ar-rahman.jpg
+    - assets/perpustakaan.jpeg
     
   fonts:
     - family: Poppins
