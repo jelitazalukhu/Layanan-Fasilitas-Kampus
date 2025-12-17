@@ -1,126 +1,155 @@
 import 'package:flutter/material.dart';
+import 'vokasi.dart'; // import file baru vokasi.dart
 
 /* ======================
-   DATA VOKASI
+   DATA FASILITAS UMUM
    ====================== */
 
-final List<Map<String, dynamic>> vokasiRuangKelas = [
-  for (int i = 201; i <= 207; i++)
-    {
-      "jenis": "Ruang Kelas",
-      "nama": "RB$i",
-      "lantai": 2,
-      "status": i % 2 == 0 ? "TERISI" : "KOSONG",
-      "gambar": "assets/usuu.jpg",
-    },
-  for (int i = 301; i <= 307; i++)
-    {
-      "jenis": "Ruang Kelas",
-      "nama": "RB$i",
-      "lantai": 3,
-      "status": i % 2 == 0 ? "TERISI" : "KOSONG",
-      "gambar": "assets/usuu.jpg",
-    },
+final List<Map<String, dynamic>> fasilitas = [
+  {
+    "kategori": "Fasilitas Umum",
+    "nama": "Perpustakaan",
+    "lokasi": "Kampus USU",
+    "gambar": "assets/perpustakaan.jpeg",
+    "fitur": ["WiFi Ready", "AC"],
+    "jamBuka": 8,
+    "jamTutup": 17,
+  },
+  {
+    "kategori": "Fasilitas Umum",
+    "nama": "Auditorium",
+    "lokasi": "Kampus USU",
+    "gambar": "assets/auditorium.webp",
+    "fitur": ["Sound System", "AC"],
+    "jamBuka": 8,
+    "jamTutup": 22,
+  },
 ];
 
-final List<Map<String, dynamic>> vokasiLab = [
-  for (var lab in ["A", "B", "C", "D", "E"])
-    {
-      "jenis": "Laboratorium",
-      "nama": "Lab $lab",
-      "status": lab == "A" || lab == "C"
-          ? "TERPAKAI"
-          : "TIDAK TERPAKAI",
-      "gambar": "assets/usuu.jpg",
-    },
+/* ======================
+   DAFTAR FAKULTAS
+   ====================== */
+
+final List<Map<String, String>> daftarFakultas = [
+  {"nama": "Fakultas Ilmu Budaya"},
+  {"nama": "Fakultas Ilmu Sosial dan Ilmu Politik"},
+  {"nama": "Fakultas Keperawatan"},
+  {"nama": "Fakultas Psikologi"},
+  {"nama": "Fakultas Farmasi"},
+  {"nama": "Fakultas Ilmu Komputer dan Teknologi Informasi"},
+  {"nama": "Fakultas Kedokteran Gigi"},
+  {"nama": "Fakultas Kesehatan Masyarakat"},
+  {"nama": "Fakultas Pertanian"},
+  {"nama": "Fakultas Hukum"},
+  {"nama": "Fakultas Kedokteran"},
+  {"nama": "Fakultas Teknik"},
+  {"nama": "Fakultas Ekonomi dan Bisnis"},
+  {"nama": "Fakultas Matematika dan Ilmu Pengetahuan Alam"},
+  {"nama": "Fakultas Vokasi"},
 ];
 
-final List<Map<String, dynamic>> vokasiProyektor = [
-  for (int i = 1; i <= 10; i++)
+/* ======================
+   DATA FASILITAS PER FAKULTAS
+   ====================== */
+
+final Map<String, List<Map<String, dynamic>>> fasilitasFakultas = {
+  "Fakultas Ilmu Budaya": [
     {
-      "jenis": "Proyektor",
-      "nama": "Proyektor V${i.toString().padLeft(2, '0')}",
-      "status": i % 3 == 0 ? "TERPAKAI" : "TERSEDIA",
+      "kategori": "Fakultas",
+      "nama": "Ruang Kelas",
+      "lokasi": "FIB USU",
+      "gambar": "assets/usuu.jpg",
+      "jamBuka": 7,
+      "jamTutup": 18,
     },
-];
+  ],
+  // ... fakultas lain (tetap sama, jangan diubah)
+  "Fakultas Vokasi": [
+    {
+      "kategori": "Fakultas",
+      "nama": "Laboratorium Praktik",
+      "lokasi": "Vokasi USU",
+      "gambar": "assets/usuu.jpg",
+      "jamBuka": 8,
+      "jamTutup": 17,
+    },
+    {
+      "kategori": "Fakultas",
+      "nama": "Ruang Kelas",
+      "lokasi": "Vokasi USU",
+      "gambar": "assets/usuu.jpg",
+      "jamBuka": 7,
+      "jamTutup": 18,
+    },
+  ],
+};
 
 /* ======================
    SCREEN
    ====================== */
 
-class FasilitasScreen extends StatefulWidget {
-  const FasilitasScreen({super.key});
+class DaftarFasilitasScreen extends StatefulWidget {
+  const DaftarFasilitasScreen({super.key});
 
   @override
-  State<FasilitasScreen> createState() => _HomePageState();
+  State<DaftarFasilitasScreen> createState() => _DaftarFasilitasScreenState();
 }
 
-class _HomePageState extends State<FasilitasScreen> {
-  String selectedKategori = "Fakultas";
-  String selectedFakultas = "Fakultas Vokasi";
+class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
+  String selectedKategori = "Semua";
+  String? selectedFakultas;
 
-  String selectedVokasiBar = "Ruang Kelas";
-  int? selectedLantai;
-
-  List<Map<String, dynamic>> get vokasiDataTampil {
-    if (selectedVokasiBar == "Ruang Kelas") {
-      var data = vokasiRuangKelas;
-      if (selectedLantai != null) {
-        data = data.where((e) => e["lantai"] == selectedLantai).toList();
-      }
-      return data;
-    }
-    if (selectedVokasiBar == "Laboratorium") return vokasiLab;
-    return vokasiProyektor;
+  bool isBuka(int jamBuka, int jamTutup) {
+    final now = DateTime.now().hour;
+    return now >= jamBuka && now < jamTutup;
   }
 
   @override
   Widget build(BuildContext context) {
+    final dataTampil = selectedKategori == "Semua"
+        ? fasilitas
+        : fasilitas.where((f) => f["kategori"] == selectedKategori).toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF1FFF4),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text(
-            "Fakultas Vokasi",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const Text(
+              "Daftar Fasilitas Universitas Sumatera Utara",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            _kategori(),
+            const SizedBox(height: 16),
 
-          _barVokasi(),
-          const SizedBox(height: 12),
+            if (selectedKategori == "Fakultas")
+              selectedFakultas == null
+                  ? _gridFakultas()
+                  : _fasilitasFakultas(),
 
-          if (selectedVokasiBar == "Ruang Kelas") _dropdownLantai(),
-          const SizedBox(height: 12),
-
-          selectedVokasiBar == "Proyektor"
-              ? _gridProyektor()
-              : Column(
-                  children:
-                      vokasiDataTampil.map(_cardVokasi).toList(),
-                ),
-        ],
+            if (selectedKategori != "Fakultas")
+              ...dataTampil.map(_cardFasilitas).toList(),
+          ],
+        ),
       ),
     );
   }
 
-  /* ======================
-     BAR VOKASI (TANPA SEMUA)
-     ====================== */
-  Widget _barVokasi() {
-    final bar = ["Ruang Kelas", "Laboratorium", "Proyektor"];
-
+  Widget _kategori() {
+    final kategori = ["Semua", "Fasilitas Umum", "Fakultas", "Masjid"];
     return Row(
-      children: bar.map((b) {
+      children: kategori.map((k) {
         return Padding(
           padding: const EdgeInsets.only(right: 8),
           child: ChoiceChip(
-            label: Text(b),
-            selected: selectedVokasiBar == b,
+            label: Text(k),
+            selected: selectedKategori == k,
             onSelected: (_) {
               setState(() {
-                selectedVokasiBar = b;
-                selectedLantai = null;
+                selectedKategori = k;
+                selectedFakultas = null;
               });
             },
           ),
@@ -129,94 +158,57 @@ class _HomePageState extends State<FasilitasScreen> {
     );
   }
 
-  Widget _dropdownLantai() {
-    return DropdownButton<int?>(
-      value: selectedLantai,
-      hint: const Text("Pilih Lantai"),
-      items: const [
-        DropdownMenuItem(value: null, child: Text("Semua")),
-        DropdownMenuItem(value: 2, child: Text("Lantai 2")),
-        DropdownMenuItem(value: 3, child: Text("Lantai 3")),
-      ],
-      onChanged: (v) => setState(() => selectedLantai = v),
-    );
-  }
-
-  /* ======================
-     CARD RUANG & LAB
-     ====================== */
-  Widget _cardVokasi(Map<String, dynamic> data) {
-    final aktif = data["status"] == "KOSONG" ||
-        data["status"] == "TERSEDIA" ||
-        data["status"] == "TIDAK TERPAKAI";
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        children: [
-          Image.asset(
-            data["gambar"],
-            height: 160,
-            width: double.infinity,
-            fit: BoxFit.cover,
-          ),
-          ListTile(
-            title: Text(data["nama"],
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(data["status"],
-                style: TextStyle(
-                    color: aktif ? Colors.green : Colors.red)),
-            trailing: ElevatedButton(
-              onPressed: aktif ? () => _popupBooking(data) : null,
-              child: const Text("Booking"),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /* ======================
-     GRID PROYEKTOR
-     ====================== */
-  Widget _gridProyektor() {
+  Widget _gridFakultas() {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: vokasiProyektor.length,
-      gridDelegate:
-          const SliverGridDelegateWithFixedCrossAxisCount(
+      itemCount: daftarFakultas.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
-      itemBuilder: (_, i) {
-        final p = vokasiProyektor[i];
-        final aktif = p["status"] == "TERSEDIA";
-
+      itemBuilder: (context, index) {
+        final f = daftarFakultas[index];
         return GestureDetector(
-          onTap: aktif ? () => _popupBooking(p) : null,
+          onTap: () {
+            if (f["nama"] == "Fakultas Vokasi") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const VokasiScreen(),
+                ),
+              );
+            } else {
+              setState(() => selectedFakultas = f["nama"]);
+            }
+          },
           child: Card(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.videocam,
-                    size: 40,
-                    color: aktif ? Colors.green : Colors.red),
-                const SizedBox(height: 8),
-                Text(p["nama"],
-                    style:
-                        const TextStyle(fontWeight: FontWeight.bold)),
-                Text(p["status"]),
-                const SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: aktif ? () => _popupBooking(p) : null,
-                  child: const Text("Booking"),
-                )
-              ],
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.account_balance,
+                      size: 36,
+                      color: Colors.green,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      f["nama"]!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         );
@@ -224,25 +216,76 @@ class _HomePageState extends State<FasilitasScreen> {
     );
   }
 
-  /* ======================
-     POPUP BOOKING
-     ====================== */
-  void _popupBooking(Map<String, dynamic> data) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Booking ${data["nama"]}"),
-        content: const Text(
-          "Fitur booking akan dihubungkan ke backend.\n\n"
-          "Status, jam, dan notifikasi masih placeholder.",
+  Widget _fasilitasFakultas() {
+    final list = fasilitasFakultas[selectedFakultas] ?? [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => setState(() => selectedFakultas = null),
+            ),
+            Expanded(
+              child: Text(
+                selectedFakultas!,
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Tutup")),
-          ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Booking")),
+        if (list.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: 32),
+            child: Center(
+              child: Text("Belum ada data fasilitas",
+                  style: TextStyle(color: Colors.grey)),
+            ),
+          )
+        else
+          ...list.map(_cardFasilitas).toList(),
+      ],
+    );
+  }
+
+  Widget _cardFasilitas(Map<String, dynamic> data) {
+    final buka = isBuka(data["jamBuka"], data["jamTutup"]);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Image.asset(
+              data["gambar"],
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(data["nama"],
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(data["lokasi"] ?? ""),
+                const SizedBox(height: 6),
+                Text(buka ? "BUKA" : "TUTUP",
+                    style: TextStyle(
+                        color: buka ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
         ],
       ),
     );
