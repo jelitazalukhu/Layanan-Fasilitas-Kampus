@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
 /* ======================
    DATA FASILITAS
    ====================== */
@@ -13,56 +9,62 @@ final List<Map<String, dynamic>> fasilitas = [
     "kategori": "Fasilitas Umum",
     "nama": "Perpustakaan",
     "lokasi": "Kampus USU",
-    "gambar": "assets/images/perpustakaan.jpeg",
+    "gambar": "assets/perpustakaan.jpeg",
     "fitur": ["WiFi Ready", "AC"],
+    "jamBuka": 8,
+    "jamTutup": 17,
   },
   {
     "kategori": "Fasilitas Umum",
     "nama": "Auditorium",
     "lokasi": "Kampus USU",
-    "gambar": "assets/images/auditorium.webp",
+    "gambar": "assets/auditorium.webp",
     "fitur": ["Sound System", "AC"],
+    "jamBuka": 8,
+    "jamTutup": 22,
   },
   {
     "kategori": "Masjid",
     "nama": "Masjid Ar-Rahman",
     "lokasi": "Kampus USU",
-    "gambar": "assets/images/masjid_ar-rahman.jpg",
+    "gambar": "assets/masjid_ar-rahman.jpg",
     "fitur": ["Tempat Wudhu", "AC"],
+    "jamBuka": 0,
+    "jamTutup": 24, // 24 jam
   },
 ];
-
-/* ======================
-   APP
-   ====================== */
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Daftar Fasilitas',
-      theme: ThemeData(useMaterial3: true),
-      home: const HomePage(),
-    );
-  }
-}
 
 /* ======================
    HOME PAGE
    ====================== */
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class FasilitasScreen extends StatefulWidget {
+  const FasilitasScreen({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<FasilitasScreen> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<FasilitasScreen> {
   String selectedKategori = "Semua";
+
+  /* ======================
+     FUNGSI STATUS BUKA
+     ====================== */
+
+  bool isBuka(int jamBuka, int jamTutup) {
+    final now = DateTime.now().hour;
+    return now >= jamBuka && now < jamTutup;
+  }
+
+  String keteranganJam(int jamBuka, int jamTutup) {
+    if (jamBuka == 0 && jamTutup == 24) {
+      return "Buka 24 Jam";
+    }
+    return "Jam Operasional "
+        "${jamBuka.toString().padLeft(2, '0')}.00 - "
+        "${jamTutup.toString().padLeft(2, '0')}.00";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,26 +99,39 @@ class _HomePageState extends State<HomePage> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.grey.shade400,
         borderRadius: BorderRadius.circular(24),
+        image: const DecorationImage(
+          image: AssetImage("assets/usuu.jpg"),
+          fit: BoxFit.cover,
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            "Daftar Fasilitas",
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.45),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              "Daftar Fasilitas",
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            "Kampus Universitas Sumatera Utara",
-            style: TextStyle(color: Colors.white70),
-          ),
-        ],
+            SizedBox(height: 8),
+            Text(
+              "Kampus Universitas Sumatera Utara",
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -157,20 +172,25 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _cardFasilitas(Map<String, dynamic> data) {
+    final buka = isBuka(data["jamBuka"], data["jamTutup"]);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6)
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(20)),
             child: Image.asset(
-              data["gambar"], // ⚠️ TANPA assets/
+              data["gambar"],
               height: 180,
               width: double.infinity,
               fit: BoxFit.cover,
@@ -190,7 +210,38 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 4),
                 Text(data["lokasi"]),
+                const SizedBox(height: 8),
+
+                // STATUS BUKA / TUTUP
+                Row(
+                  children: [
+                    Icon(
+                      Icons.circle,
+                      size: 12,
+                      color: buka ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      buka ? "BUKA" : "TUTUP",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: buka ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  keteranganJam(data["jamBuka"], data["jamTutup"]),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+
                 const SizedBox(height: 12),
+
+                // FITUR
                 Wrap(
                   spacing: 8,
                   children: (data["fitur"] as List<String>)
