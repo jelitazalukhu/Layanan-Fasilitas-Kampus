@@ -1,41 +1,51 @@
 import 'package:flutter/material.dart';
 
 /* ======================
-   DATA FASILITAS
+   DATA VOKASI
    ====================== */
 
-final List<Map<String, dynamic>> fasilitas = [
-  {
-    "kategori": "Fasilitas Umum",
-    "nama": "Perpustakaan",
-    "lokasi": "Kampus USU",
-    "gambar": "assets/perpustakaan.jpeg",
-    "fitur": ["WiFi Ready", "AC"],
-    "jamBuka": 8,
-    "jamTutup": 17,
-  },
-  {
-    "kategori": "Fasilitas Umum",
-    "nama": "Auditorium",
-    "lokasi": "Kampus USU",
-    "gambar": "assets/auditorium.webp",
-    "fitur": ["Sound System", "AC"],
-    "jamBuka": 8,
-    "jamTutup": 22,
-  },
-  {
-    "kategori": "Masjid",
-    "nama": "Masjid Ar-Rahman",
-    "lokasi": "Kampus USU",
-    "gambar": "assets/masjid_ar-rahman.jpg",
-    "fitur": ["Tempat Wudhu", "AC"],
-    "jamBuka": 0,
-    "jamTutup": 24, // 24 jam
-  },
+final List<Map<String, dynamic>> vokasiRuangKelas = [
+  for (int i = 201; i <= 207; i++)
+    {
+      "jenis": "Ruang Kelas",
+      "nama": "RB$i",
+      "lantai": 2,
+      "status": i % 2 == 0 ? "TERISI" : "KOSONG",
+      "gambar": "assets/usuu.jpg",
+    },
+  for (int i = 301; i <= 307; i++)
+    {
+      "jenis": "Ruang Kelas",
+      "nama": "RB$i",
+      "lantai": 3,
+      "status": i % 2 == 0 ? "TERISI" : "KOSONG",
+      "gambar": "assets/usuu.jpg",
+    },
+];
+
+final List<Map<String, dynamic>> vokasiLab = [
+  for (var lab in ["A", "B", "C", "D", "E"])
+    {
+      "jenis": "Laboratorium",
+      "nama": "Lab $lab",
+      "status": lab == "A" || lab == "C"
+          ? "TERPAKAI"
+          : "TIDAK TERPAKAI",
+      "gambar": "assets/usuu.jpg",
+    },
+];
+
+final List<Map<String, dynamic>> vokasiProyektor = [
+  for (int i = 1; i <= 10; i++)
+    {
+      "jenis": "Proyektor",
+      "nama": "Proyektor V${i.toString().padLeft(2, '0')}",
+      "status": i % 3 == 0 ? "TERPAKAI" : "TERSEDIA",
+    },
 ];
 
 /* ======================
-   HOME PAGE
+   SCREEN
    ====================== */
 
 class FasilitasScreen extends StatefulWidget {
@@ -46,124 +56,72 @@ class FasilitasScreen extends StatefulWidget {
 }
 
 class _HomePageState extends State<FasilitasScreen> {
-  String selectedKategori = "Semua";
+  String selectedKategori = "Fakultas";
+  String selectedFakultas = "Fakultas Vokasi";
 
-  /* ======================
-     FUNGSI STATUS BUKA
-     ====================== */
+  String selectedVokasiBar = "Ruang Kelas";
+  int? selectedLantai;
 
-  bool isBuka(int jamBuka, int jamTutup) {
-    final now = DateTime.now().hour;
-    return now >= jamBuka && now < jamTutup;
-  }
-
-  String keteranganJam(int jamBuka, int jamTutup) {
-    if (jamBuka == 0 && jamTutup == 24) {
-      return "Buka 24 Jam";
+  List<Map<String, dynamic>> get vokasiDataTampil {
+    if (selectedVokasiBar == "Ruang Kelas") {
+      var data = vokasiRuangKelas;
+      if (selectedLantai != null) {
+        data = data.where((e) => e["lantai"] == selectedLantai).toList();
+      }
+      return data;
     }
-    return "Jam Operasional "
-        "${jamBuka.toString().padLeft(2, '0')}.00 - "
-        "${jamTutup.toString().padLeft(2, '0')}.00";
+    if (selectedVokasiBar == "Laboratorium") return vokasiLab;
+    return vokasiProyektor;
   }
 
   @override
   Widget build(BuildContext context) {
-    final dataTampil = selectedKategori == "Semua"
-        ? fasilitas
-        : fasilitas.where((f) => f["kategori"] == selectedKategori).toList();
-
     return Scaffold(
       backgroundColor: const Color(0xFFF1FFF4),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _header(),
-            const SizedBox(height: 16),
-            _searchBar(),
-            const SizedBox(height: 16),
-            _kategori(),
-            const SizedBox(height: 16),
-            ...dataTampil.map(_cardFasilitas).toList(),
-          ],
-        ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text(
+            "Fakultas Vokasi",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+
+          _barVokasi(),
+          const SizedBox(height: 12),
+
+          if (selectedVokasiBar == "Ruang Kelas") _dropdownLantai(),
+          const SizedBox(height: 12),
+
+          selectedVokasiBar == "Proyektor"
+              ? _gridProyektor()
+              : Column(
+                  children:
+                      vokasiDataTampil.map(_cardVokasi).toList(),
+                ),
+        ],
       ),
     );
   }
 
   /* ======================
-     WIDGET
+     BAR VOKASI (TANPA SEMUA)
      ====================== */
-
-  Widget _header() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        image: const DecorationImage(
-          image: AssetImage("assets/usuu.jpg"),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.45),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              "Daftar Fasilitas",
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              "Kampus Universitas Sumatera Utara",
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _searchBar() {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: "Cari fasilitas...",
-        prefixIcon: const Icon(Icons.search),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(32),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
-  }
-
-  Widget _kategori() {
-    final kategori = ["Semua", "Fasilitas Umum", "Fakultas", "Masjid"];
+  Widget _barVokasi() {
+    final bar = ["Ruang Kelas", "Laboratorium", "Proyektor"];
 
     return Row(
-      children: kategori.map((k) {
-        final aktif = selectedKategori == k;
+      children: bar.map((b) {
         return Padding(
           padding: const EdgeInsets.only(right: 8),
           child: ChoiceChip(
-            label: Text(k),
-            selected: aktif,
+            label: Text(b),
+            selected: selectedVokasiBar == b,
             onSelected: (_) {
-              setState(() => selectedKategori = k);
+              setState(() {
+                selectedVokasiBar = b;
+                selectedLantai = null;
+              });
             },
           ),
         );
@@ -171,86 +129,120 @@ class _HomePageState extends State<FasilitasScreen> {
     );
   }
 
-  Widget _cardFasilitas(Map<String, dynamic> data) {
-    final buka = isBuka(data["jamBuka"], data["jamTutup"]);
+  Widget _dropdownLantai() {
+    return DropdownButton<int?>(
+      value: selectedLantai,
+      hint: const Text("Pilih Lantai"),
+      items: const [
+        DropdownMenuItem(value: null, child: Text("Semua")),
+        DropdownMenuItem(value: 2, child: Text("Lantai 2")),
+        DropdownMenuItem(value: 3, child: Text("Lantai 3")),
+      ],
+      onChanged: (v) => setState(() => selectedLantai = v),
+    );
+  }
 
-    return Container(
+  /* ======================
+     CARD RUANG & LAB
+     ====================== */
+  Widget _cardVokasi(Map<String, dynamic> data) {
+    final aktif = data["status"] == "KOSONG" ||
+        data["status"] == "TERSEDIA" ||
+        data["status"] == "TIDAK TERPAKAI";
+
+    return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 6)
-        ],
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(20)),
-            child: Image.asset(
-              data["gambar"],
-              height: 180,
-              width: double.infinity,
-              fit: BoxFit.cover,
+          Image.asset(
+            data["gambar"],
+            height: 160,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
+          ListTile(
+            title: Text(data["nama"],
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(data["status"],
+                style: TextStyle(
+                    color: aktif ? Colors.green : Colors.red)),
+            trailing: ElevatedButton(
+              onPressed: aktif ? () => _popupBooking(data) : null,
+              child: const Text("Booking"),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
+        ],
+      ),
+    );
+  }
+
+  /* ======================
+     GRID PROYEKTOR
+     ====================== */
+  Widget _gridProyektor() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: vokasiProyektor.length,
+      gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemBuilder: (_, i) {
+        final p = vokasiProyektor[i];
+        final aktif = p["status"] == "TERSEDIA";
+
+        return GestureDetector(
+          onTap: aktif ? () => _popupBooking(p) : null,
+          child: Card(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  data["nama"],
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(data["lokasi"]),
+                Icon(Icons.videocam,
+                    size: 40,
+                    color: aktif ? Colors.green : Colors.red),
                 const SizedBox(height: 8),
-
-                // STATUS BUKA / TUTUP
-                Row(
-                  children: [
-                    Icon(
-                      Icons.circle,
-                      size: 12,
-                      color: buka ? Colors.green : Colors.red,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      buka ? "BUKA" : "TUTUP",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: buka ? Colors.green : Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  keteranganJam(data["jamBuka"], data["jamTutup"]),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // FITUR
-                Wrap(
-                  spacing: 8,
-                  children: (data["fitur"] as List<String>)
-                      .map((f) => Chip(label: Text(f)))
-                      .toList(),
-                ),
+                Text(p["nama"],
+                    style:
+                        const TextStyle(fontWeight: FontWeight.bold)),
+                Text(p["status"]),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: aktif ? () => _popupBooking(p) : null,
+                  child: const Text("Booking"),
+                )
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  /* ======================
+     POPUP BOOKING
+     ====================== */
+  void _popupBooking(Map<String, dynamic> data) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Booking ${data["nama"]}"),
+        content: const Text(
+          "Fitur booking akan dihubungkan ke backend.\n\n"
+          "Status, jam, dan notifikasi masih placeholder.",
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Tutup")),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Booking")),
         ],
       ),
     );
