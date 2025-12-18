@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'vokasi.dart';
 import 'fmipa.dart';
 
-
 /* ======================
    DATA FASILITAS UMUM
    ====================== */
@@ -117,21 +116,26 @@ final Map<String, List<Map<String, dynamic>>> fasilitasFakultas = {
    ====================== */
 
 class DaftarFasilitasScreen extends StatefulWidget {
-  const DaftarFasilitasScreen({super.key});
+  final String initialKategori;
+  const DaftarFasilitasScreen({super.key, this.initialKategori = "Semua"});
 
   @override
   State<DaftarFasilitasScreen> createState() => _DaftarFasilitasScreenState();
 }
 
 class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
-  String selectedKategori = "Semua";
+  late String selectedKategori;
   String? selectedFakultas;
 
+  @override
+  void initState() {
+    super.initState();
+    selectedKategori = widget.initialKategori; // pake kategori dari HomeScreen
+  }
   bool isBuka(int jamBuka, int jamTutup) {
     final now = DateTime.now().hour;
     return now >= jamBuka && now < jamTutup;
   }
-
   @override
   Widget build(BuildContext context) {
     final dataTampil = selectedKategori == "Semua"
@@ -159,10 +163,7 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
             SizedBox(height: 2),
             Text(
               "Universitas Sumatera Utara",
-              style: TextStyle(
-                color: Color(0xFF6B7280),
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Color(0xFF6B7280), fontSize: 12),
             ),
           ],
         ),
@@ -230,9 +231,7 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
             const SizedBox(height: 16),
 
             if (selectedKategori == "Fakultas")
-              selectedFakultas == null
-                  ? _gridFakultas()
-                  : _fasilitasFakultas(),
+              selectedFakultas == null ? _gridFakultas() : _fasilitasFakultas(),
 
             if (selectedKategori != "Fakultas")
               ...dataTampil.map(_cardFasilitas).toList(),
@@ -284,36 +283,34 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
             if (f["nama"] == "Fakultas Vokasi") {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const VokasiScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const VokasiScreen()),
               );
-            } 
-            else if (f["nama"] ==
+            } else if (f["nama"] ==
                 "Fakultas Matematika dan Ilmu Pengetahuan Alam") {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const FmipaScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const FmipaScreen()),
               );
-            } 
-            else {
+            } else {
               setState(() => selectedFakultas = f["nama"]);
             }
           },
 
           child: Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.account_balance,
-                        size: 36, color: Colors.green),
+                    const Icon(
+                      Icons.account_balance,
+                      size: 36,
+                      color: Colors.green,
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       f["nama"]!,
@@ -347,8 +344,7 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
             ),
             Text(
               selectedFakultas!,
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -363,8 +359,7 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
         : null;
 
     return GestureDetector(
-      onTap: data["nama"] == "Auditorium" ||
-              data["nama"] == "Gedung H. Anif"
+      onTap: data["nama"] == "Auditorium" || data["nama"] == "Gedung H. Anif"
           ? () {
               showDialog(
                 context: context,
@@ -380,8 +375,9 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
           children: [
             if (data["gambar"] != null)
               ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
                 child: Image.asset(
                   data["gambar"],
                   height: 180,
@@ -397,7 +393,9 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
                   Text(
                     data["nama"],
                     style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(data["lokasi"] ?? ""),
                   const SizedBox(height: 6),
@@ -411,13 +409,9 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
                     ),
                   if (data["tersedia"] != null)
                     Text(
-                      data["tersedia"]
-                          ? "TERSEDIA"
-                          : "TIDAK TERSEDIA",
+                      data["tersedia"] ? "TERSEDIA" : "TIDAK TERSEDIA",
                       style: TextStyle(
-                        color: data["tersedia"]
-                            ? Colors.green
-                            : Colors.red,
+                        color: data["tersedia"] ? Colors.green : Colors.red,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
