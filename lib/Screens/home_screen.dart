@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import '../Screens/daftarfasilitas.dart';
+import 'daftarfasilitas.dart';
+import 'search_screen.dart';
+import 'notification_screen.dart';
+import 'profile_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/auth_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,6 +14,37 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String _userName = "Mahasiswa";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? name = prefs.getString('user_name');
+
+    if (name == null) {
+      try {
+        final profile = await AuthService().getProfile();
+        name = profile['name'];
+        if (name != null) {
+          await prefs.setString('user_name', name);
+        }
+      } catch (e) {
+        // Ignore error
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _userName = name ?? "Mahasiswa";
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,11 +74,30 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SearchScreen()),
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_outline, color: Colors.black),
+            onPressed: () {
+               Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -75,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  const Positioned(
+                  Positioned(
                     bottom: 20,
                     left: 20,
                     right: 20,
@@ -83,8 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Selamat datang di\nKampus USU!",
-                          style: TextStyle(
+                          "Selamat datang, \n$_userName!",
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
@@ -127,9 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DaftarFasilitasScreen(
-                          initialKategori: "Fakultas",
-                        ),
+                        builder: (_) => const DaftarFasilitasScreen(initialCategory: "Fakultas"),
                       ),
                     );
                   },
@@ -143,9 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DaftarFasilitasScreen(
-                          initialKategori: "Fasilitas Umum",
-                        ),
+                        builder: (_) => const DaftarFasilitasScreen(initialCategory: "Fasilitas Umum"),
                       ),
                     );
                   },
@@ -158,9 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DaftarFasilitasScreen(
-                          initialKategori: "Masjid",
-                        ),
+                        builder: (_) => const DaftarFasilitasScreen(initialCategory: "Masjid"),
                       ),
                     );
                   },
@@ -174,9 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DaftarFasilitasScreen(
-                          initialKategori: "Fasilitas Umum",
-                        ),
+                        builder: (_) => const DaftarFasilitasScreen(initialCategory: "Fasilitas Umum"),
                       ),
                     );
                   },
@@ -189,9 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DaftarFasilitasScreen(
-                          initialKategori: "Fasilitas Umum",
-                        ),
+                        builder: (_) => const DaftarFasilitasScreen(initialCategory: "Fasilitas Umum"),
                       ),
                     );
                   },
@@ -302,4 +347,3 @@ class HomeDummyScreen extends StatelessWidget {
     );
   }
 }
-

@@ -1,261 +1,200 @@
 import 'package:flutter/material.dart';
-import '../Screens/ganti_pw.dart';
+import '../services/auth_service.dart';
+import 'auth_screen.dart'; // For logout redirection
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
-  // backend ubah data disini
-  final String name = "Jelita Zalukhu";
-  final String nim = "221402XXX";
-  final String prodi = "Teknik Informatika";
-  final String fakultas = "Fakultas Vokasi";
-  final String email = "nama@students.usu.ac.id";
-  final String phone = "+62 8xxxxxxxxxx";
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final AuthService _authService = AuthService();
+  final _formKey = GlobalKey<FormState>();
+  
+  bool _isLoading = true;
+  Map<String, dynamic>? _user;
+  
+  late TextEditingController _nameController;
+  late TextEditingController _passwordController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+    _passwordController = TextEditingController();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final data = await _authService.getProfile();
+      setState(() {
+        _user = data;
+        _nameController.text = data['name'] ?? '';
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (e.toString().contains('UA_401')) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Sesi telah berakhir, silakan login kembali.")),
+          );
+          _logout();
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final success = await _authService.updateProfile(
+        _nameController.text,
+        _passwordController.text.isEmpty ? null : _passwordController.text,
+      );
+
+      if (success) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Profil berhasil diupdate"), backgroundColor: Colors.green),
+          );
+          _passwordController.clear();
+        }
+      } else {
+        throw Exception("Gagal update profil");
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _logout() async {
+    await _authService.logout();
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const AuthScreen()),
+        (route) => false,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF3FBF6),
-
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFFF3FBF6),
-        centerTitle: true,
-        title: const Text(
-          "Profil",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
-        ),
+        title: const Text("Profil Saya", style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 1,
         iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.red),
+            onPressed: _logout,
+            tooltip: "Logout",
+          )
+        ],
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              const CircleAvatar(
+                radius: 50,
+                backgroundColor: Color(0xFF065F46),
+                child: Icon(Icons.person, size: 50, color: Colors.white),
               ),
-              child: Column(
-                children: [
-                  
-                  CircleAvatar(
-                    radius: 48,
+              const SizedBox(height: 20),
+              
+              // Read-only fields
+              _buildReadOnlyField("Email", _user?['email']),
+              const SizedBox(height: 12),
+              _buildReadOnlyField("NIM", _user?['nim']),
+              const SizedBox(height: 12),
+              
+              // Editable Name
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: "Nama Lengkap",
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+                validator: (v) => v!.isEmpty ? "Nama tidak boleh kosong" : null,
+              ),
+              const SizedBox(height: 12),
+              
+              // Editable Password
+              TextFormField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "Password Baru (Opsional)",
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock_outline),
+                  helperText: "Kosongkan jika tidak ingin mengganti password",
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _updateProfile,
+                  style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF065F46),
-                    child: Text(
-                      _getInitials(name),
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text("NIM: $nim"),
-                  const SizedBox(height: 4),
-                  Text("$prodi • $fakultas", textAlign: TextAlign.center),
-                ],
+                  child: const Text("Simpan Perubahan", style: TextStyle(fontSize: 16, color: Colors.white)),
+                ),
               ),
-            ),
-
-            const SizedBox(height: 24),
-
-            _ProfileSection(
-              title: "Informasi Akun",
-              children: [
-                _ProfileItem(
-                  icon: Icons.email_outlined,
-                  title: "Email Kampus",
-                  value: email,
-                ),
-                _ProfileItem(
-                  icon: Icons.phone_outlined,
-                  title: "Nomor HP",
-                  value: phone,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            _ProfileSection(
-              title: "Pengaturan Akun",
-              children: [
-                _ProfileAction(
-                  icon: Icons.lock_outline,
-                  title: "Ganti Password",
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ChangePasswordScreen(),
-                      ),
-                    );
-                  },
-                ),
-                _ProfileAction(
-                  icon: Icons.info_outline,
-                  title: "Tentang Aplikasi",
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AboutAppScreen()),
-                    );
-                  },
-                ),
-                _ProfileAction(
-                  icon: Icons.logout,
-                  title: "Logout",
-                  isDanger: true,
-                  onTap: () {
-
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileSection extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-
-  const _ProfileSection({required this.title, required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+            ],
           ),
-          const SizedBox(height: 12),
-          ...children,
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-
-  const _ProfileItem({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 12)),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileAction extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-  final bool isDanger;
-
-  const _ProfileAction({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-    this.isDanger = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Color? color = isDanger ? Colors.red : null;
-
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: color),
-      title: Text(title, style: TextStyle(color: color)),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: onTap,
-    );
-  }
-}
-
-class AboutAppScreen extends StatelessWidget {
-  const AboutAppScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF3FBF6),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFFF3FBF6),
-        title: const Text(
-          "Tentang Aplikasi",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
-        ),
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: const Padding(
-        padding: EdgeInsets.all(20),
-        child: Text(
-          "CampusFind adalah aplikasi untuk membantu mahasiswa "
-          "menemukan fasilitas dan layanan kampus dengan mudah.",
         ),
       ),
     );
   }
-}
 
-String _getInitials(String name) {
-  final parts = name.trim().split(" ");
-  if (parts.length == 1) return parts[0][0].toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
+  Widget _buildReadOnlyField(String label, String? value) {
+    return TextFormField(
+      initialValue: value,
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        filled: true,
+        fillColor: Colors.grey[200],
+      ),
+    );
+  }
 }

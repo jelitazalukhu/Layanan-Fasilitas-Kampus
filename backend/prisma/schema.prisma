@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  nim       String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  bookings  Booking[]
+  notifications Notification[]
+}
+
+model Facility {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  location    String
+  imageUrl    String
+  category    String
+  openHour    Int
+  closeHour   Int
+  bookings    Booking[]
+}
+
+model Booking {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  facilityId Int
+  date       DateTime
+  startTime  Int
+  endTime    Int
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  
+  user       User     @relation(fields: [userId], references: [id])
+  facility   Facility @relation(fields: [facilityId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
