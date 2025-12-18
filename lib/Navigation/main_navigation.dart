@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../Screens/home_screen.dart';
+import '../Screens/home_screen.dart' hide DummyScreen;
 import '../Screens/daftarfasilitas.dart';
 import '../Screens/profile_screen.dart';
-import '../Screens/dummy_screen.dart';
+import '../Screens/dummy_screen.dart'; // Flutter sekarang hanya pakai yang ini
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -22,7 +22,7 @@ class _MainNavigationState extends State<MainNavigation> {
       subtitle: "Fitur peta kampus sedang dikembangkan",
       icon: Icons.map_outlined,
     ),
-    const ProfileScreen()
+    const ProfileScreen(),
   ];
 
   @override
