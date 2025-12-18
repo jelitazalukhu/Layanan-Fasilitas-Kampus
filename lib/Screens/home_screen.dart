@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../Screens/daftarfasilitas.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 20,
               ),
             ),
-            SizedBox(height: 2),
+            SizedBox(height: 3),
             Text(
               "Universitas Sumatera Utara",
               style: TextStyle(color: Color(0xFF6B7280), fontSize: 12),
@@ -37,26 +38,20 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: Colors.black),
-            onPressed: () {
-              // TODO: search screen
-            },
+            onPressed: () {},
           ),
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () {
-              // TODO: notification screen
-            },
+            onPressed: () {},
           ),
         ],
       ),
 
-      /// BODY
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// HERO IMAGE
             ClipRRect(
               borderRadius: BorderRadius.circular(24),
               child: Stack(
@@ -132,20 +127,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DummyScreen(title: "Fakultas"),
+                        builder: (_) => const DaftarFasilitasScreen(
+                          initialKategori: "Fakultas",
+                        ),
                       ),
                     );
                   },
                 ),
+
                 FacilityCard(
-                  title: "Kantin USU",
-                  subtitle: "Kuliner",
-                  image: "assets/kantin.jpg",
+                  title: "Auditorium",
+                  subtitle: "Gedung",
+                  image: "assets/auditorium.webp",
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DummyScreen(title: "Kantin USU"),
+                        builder: (_) => const DaftarFasilitasScreen(
+                          initialKategori: "Fasilitas Umum",
+                        ),
                       ),
                     );
                   },
@@ -158,12 +158,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            const DummyScreen(title: "Masjid Kampus"),
+                        builder: (_) => const DaftarFasilitasScreen(
+                          initialKategori: "Masjid",
+                        ),
                       ),
                     );
                   },
                 ),
+
                 FacilityCard(
                   title: "Perpustakaan",
                   subtitle: "Edukasi",
@@ -172,8 +174,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            const DummyScreen(title: "Perpustakaan"),
+                        builder: (_) => const DaftarFasilitasScreen(
+                          initialKategori: "Fasilitas Umum",
+                        ),
                       ),
                     );
                   },
@@ -186,7 +189,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DummyScreen(title: "Poliklinik"),
+                        builder: (_) => const DaftarFasilitasScreen(
+                          initialKategori: "Fasilitas Umum",
+                        ),
                       ),
                     );
                   },
@@ -200,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            const DummyScreen(title: "Peta Digital"),
+                            const HomeDummyScreen(title: "Peta Digital"),
                       ),
                     );
                   },
@@ -282,10 +287,10 @@ class FacilityCard extends StatelessWidget {
   }
 }
 
-class DummyScreen extends StatelessWidget {
+class HomeDummyScreen extends StatelessWidget {
   final String title;
 
-  const DummyScreen({super.key, required this.title});
+  const HomeDummyScreen({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -297,3 +302,4 @@ class DummyScreen extends StatelessWidget {
     );
   }
 }
+
