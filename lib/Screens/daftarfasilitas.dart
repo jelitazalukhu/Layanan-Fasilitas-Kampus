@@ -23,6 +23,33 @@ final List<Map<String, dynamic>> fasilitas = [
     "fitur": ["Sound System", "AC"],
     "jamBuka": 8,
     "jamTutup": 22,
+    "tersedia": true,
+  },
+  {
+    "kategori": "Fasilitas Umum",
+    "nama": "Poliklinik",
+    "lokasi": "Kampus USU",
+    "gambar": "assets/usuu.jpg",
+    "jamBuka": 8,
+    "jamTutup": 16,
+  },
+  {
+    "kategori": "Fasilitas Umum",
+    "nama": "Digital Learning Center Building (DLCB)",
+    "lokasi": "Kampus USU",
+    "gambar": "assets/usuu.jpg",
+    "status": "Fasilitas belum tersedia",
+    "lantai": 8,
+  },
+  {
+    "kategori": "Fasilitas Umum",
+    "nama": "Gedung H. Anif",
+    "lokasi": "Kampus USU",
+    "gambar": "assets/usuu.jpg",
+    "ruangan": {
+      "Lantai 1": ["BR 101", "BR 102", "BR 103"],
+      "Lantai 2": ["BR 201", "BR 202", "BR 203"],
+    },
   },
 ];
 
@@ -112,7 +139,7 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF1FFF4),
 
-      /// APP BAR
+      /// APP BAR (KEMBALI LENGKAP)
       appBar: AppBar(
         elevation: 0,
         backgroundColor: const Color(0xFFF1FFF4),
@@ -154,7 +181,7 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            /// HERO IMAGE
+            /// HERO IMAGE (KEMBALI)
             ClipRRect(
               borderRadius: BorderRadius.circular(24),
               child: Stack(
@@ -197,11 +224,9 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
 
             const SizedBox(height: 20),
 
-            /// KATEGORI
             _kategori(),
             const SizedBox(height: 16),
 
-            /// ISI
             if (selectedKategori == "Fakultas")
               selectedFakultas == null
                   ? _gridFakultas()
@@ -320,48 +345,110 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
   }
 
   Widget _cardFasilitas(Map<String, dynamic> data) {
-    final buka = isBuka(data["jamBuka"], data["jamTutup"]);
+    final buka = data.containsKey("jamBuka")
+        ? isBuka(data["jamBuka"], data["jamTutup"])
+        : null;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(20)),
-            child: Image.asset(
-              data["gambar"],
-              height: 180,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  data["nama"],
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+    return GestureDetector(
+      onTap: data["nama"] == "Auditorium" ||
+              data["nama"] == "Gedung H. Anif"
+          ? () {
+              showDialog(
+                context: context,
+                builder: (_) => _popupBooking(data["nama"]),
+              );
+            }
+          : null,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (data["gambar"] != null)
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
+                child: Image.asset(
+                  data["gambar"],
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
                 ),
-                Text(data["lokasi"] ?? ""),
-                const SizedBox(height: 6),
-                Text(
-                  buka ? "BUKA" : "TUTUP",
-                  style: TextStyle(
-                    color: buka ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.bold,
+              ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data["nama"],
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ],
+                  Text(data["lokasi"] ?? ""),
+                  const SizedBox(height: 6),
+                  if (buka != null)
+                    Text(
+                      buka ? "BUKA" : "TUTUP",
+                      style: TextStyle(
+                        color: buka ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  if (data["tersedia"] != null)
+                    Text(
+                      data["tersedia"]
+                          ? "TERSEDIA"
+                          : "TIDAK TERSEDIA",
+                      style: TextStyle(
+                        color: data["tersedia"]
+                            ? Colors.green
+                            : Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  if (data["status"] != null)
+                    Text(
+                      data["status"],
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+}
+
+/* ======================
+   POPUP BOOKING
+   ====================== */
+
+Widget _popupBooking(String title) {
+  return Dialog(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.meeting_room, size: 48, color: Colors.green),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.book),
+            label: const Text("Booking"),
+          ),
+        ],
+      ),
+    ),
+  );
 }
