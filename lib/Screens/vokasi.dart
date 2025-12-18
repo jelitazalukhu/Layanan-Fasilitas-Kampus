@@ -98,11 +98,13 @@ class _VokasiScreenState extends State<VokasiScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Tutup")),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Tutup"),
+          ),
           ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Booking")),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Booking"),
+          ),
         ],
       ),
     );
@@ -112,7 +114,9 @@ class _VokasiScreenState extends State<VokasiScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF1FFF4),
-      appBar: AppBar(title: const Text("Fakultas Vokasi")),
+      appBar: AppBar(
+        title: const Text("Fakultas Vokasi"),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -191,32 +195,63 @@ class _VokasiScreenState extends State<VokasiScreen> {
     );
   }
 
+  /* ======================
+     CARD RUANG & LAB (ICON)
+     ====================== */
+
   Widget _cardVokasi(Map<String, dynamic> data) {
+    final bool isRuangKelas = data["jenis"] == "Ruang Kelas";
+    final bool isLab = data["jenis"] == "Laboratorium";
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        children: [
-          Image.asset(
-            data["gambar"],
-            height: 160,
-            width: double.infinity,
-            fit: BoxFit.cover,
-          ),
-          ListTile(
-            title: Text(data["nama"],
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(data["status"],
-                style: const TextStyle(color: Colors.green)),
-            trailing: ElevatedButton(
-              onPressed: () => _popupBooking(data),
-              child: const Text("Booking"),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Icon(
+              isRuangKelas
+                  ? Icons.meeting_room
+                  : isLab
+                      ? Icons.science
+                      : Icons.category,
+              size: 64,
+              color: Colors.green,
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              data["nama"],
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              data["status"],
+              style: const TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _popupBooking(data),
+                child: const Text("Booking"),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  /* ======================
+     GRID PROYEKTOR (ASLI)
+     ====================== */
 
   Widget _gridProyektor() {
     return GridView.builder(
@@ -238,8 +273,10 @@ class _VokasiScreenState extends State<VokasiScreen> {
             children: [
               const Icon(Icons.videocam, size: 40, color: Colors.green),
               const SizedBox(height: 8),
-              Text(p["nama"],
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                p["nama"],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               Text(p["status"]),
               const SizedBox(height: 8),
               ElevatedButton(
