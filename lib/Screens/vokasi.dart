@@ -57,16 +57,33 @@ class _VokasiScreenState extends State<VokasiScreen> {
   String selectedVokasiBar = "Ruang Kelas";
   int? selectedLantai;
 
+  final TextEditingController _searchController = TextEditingController();
+  String searchQuery = "";
+
   List<Map<String, dynamic>> get vokasiDataTampil {
+    List<Map<String, dynamic>> data;
+
     if (selectedVokasiBar == "Ruang Kelas") {
-      var data = vokasiRuangKelas;
+      data = vokasiRuangKelas;
       if (selectedLantai != null) {
         data = data.where((e) => e["lantai"] == selectedLantai).toList();
       }
-      return data;
+    } else if (selectedVokasiBar == "Laboratorium") {
+      data = vokasiLab;
+    } else {
+      data = vokasiProyektor;
     }
-    if (selectedVokasiBar == "Laboratorium") return vokasiLab;
-    return vokasiProyektor;
+
+    if (searchQuery.isNotEmpty) {
+      data = data
+          .where((e) => e["nama"]
+              .toString()
+              .toLowerCase()
+              .contains(searchQuery.toLowerCase()))
+          .toList();
+    }
+
+    return data;
   }
 
   void _popupBooking(Map<String, dynamic> data) {
@@ -99,15 +116,42 @@ class _VokasiScreenState extends State<VokasiScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _searchBar(),
+          const SizedBox(height: 12),
           _barVokasi(),
           const SizedBox(height: 12),
           if (selectedVokasiBar == "Ruang Kelas") _dropdownLantai(),
           const SizedBox(height: 12),
           selectedVokasiBar == "Proyektor"
               ? _gridProyektor()
-              : Column(children: vokasiDataTampil.map(_cardVokasi).toList()),
+              : Column(
+                  children: vokasiDataTampil.map(_cardVokasi).toList(),
+                ),
         ],
       ),
+    );
+  }
+
+  /* ======================
+     SEARCH BAR
+     ====================== */
+
+  Widget _searchBar() {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: "Cari ruang / lab / proyektor...",
+        prefixIcon: const Icon(Icons.search),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      onChanged: (value) {
+        setState(() => searchQuery = value);
+      },
     );
   }
 
@@ -124,6 +168,8 @@ class _VokasiScreenState extends State<VokasiScreen> {
               setState(() {
                 selectedVokasiBar = b;
                 selectedLantai = null;
+                searchQuery = "";
+                _searchController.clear();
               });
             },
           ),
@@ -176,33 +222,31 @@ class _VokasiScreenState extends State<VokasiScreen> {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: vokasiProyektor.length,
+      itemCount: vokasiDataTampil.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
       itemBuilder: (_, i) {
-        final p = vokasiProyektor[i];
-        return GestureDetector(
-          onTap: () => _popupBooking(p),
-          child: Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.videocam, size: 40, color: Colors.green),
-                const SizedBox(height: 8),
-                Text(p["nama"], style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(p["status"]),
-                const SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: () => _popupBooking(p),
-                  child: const Text("Booking"),
-                )
-              ],
-            ),
+        final p = vokasiDataTampil[i];
+        return Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.videocam, size: 40, color: Colors.green),
+              const SizedBox(height: 8),
+              Text(p["nama"],
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(p["status"]),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () => _popupBooking(p),
+                child: const Text("Booking"),
+              )
+            ],
           ),
         );
       },

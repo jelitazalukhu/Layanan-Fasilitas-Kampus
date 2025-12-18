@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'vokasi.dart'; // import file baru vokasi.dart
+import 'vokasi.dart';
 
 /* ======================
    DATA FASILITAS UMUM
@@ -63,7 +63,6 @@ final Map<String, List<Map<String, dynamic>>> fasilitasFakultas = {
       "jamTutup": 18,
     },
   ],
-  // ... fakultas lain (tetap sama, jangan diubah)
   "Fakultas Vokasi": [
     {
       "kategori": "Fakultas",
@@ -112,18 +111,97 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1FFF4),
+
+      /// APP BAR
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: const Color(0xFFF1FFF4),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              "CampusFind",
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
+              ),
+            ),
+            SizedBox(height: 2),
+            Text(
+              "Universitas Sumatera Utara",
+              style: TextStyle(
+                color: Color(0xFF6B7280),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.black),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_none, color: Colors.black),
+            onPressed: () {},
+          ),
+        ],
+      ),
+
+      /// BODY
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text(
-              "Daftar Fasilitas Universitas Sumatera Utara",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            /// HERO IMAGE
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Stack(
+                children: [
+                  Image.asset(
+                    "assets/usuu.jpg",
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                  Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.6),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Positioned(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    child: Text(
+                      "Daftar Fasilitas\nUniversitas Sumatera Utara",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
+
+            const SizedBox(height: 20),
+
+            /// KATEGORI
             _kategori(),
             const SizedBox(height: 16),
 
+            /// ISI
             if (selectedKategori == "Fakultas")
               selectedFakultas == null
                   ? _gridFakultas()
@@ -136,6 +214,10 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
       ),
     );
   }
+
+  /* ======================
+     WIDGET PENDUKUNG
+     ====================== */
 
   Widget _kategori() {
     final kategori = ["Semua", "Fasilitas Umum", "Fakultas", "Masjid"];
@@ -192,11 +274,8 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.account_balance,
-                      size: 36,
-                      color: Colors.green,
-                    ),
+                    const Icon(Icons.account_balance,
+                        size: 36, color: Colors.green),
                     const SizedBox(height: 8),
                     Text(
                       f["nama"]!,
@@ -228,25 +307,14 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
               icon: const Icon(Icons.arrow_back),
               onPressed: () => setState(() => selectedFakultas = null),
             ),
-            Expanded(
-              child: Text(
-                selectedFakultas!,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+            Text(
+              selectedFakultas!,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
         ),
-        if (list.isEmpty)
-          const Padding(
-            padding: EdgeInsets.only(top: 32),
-            child: Center(
-              child: Text("Belum ada data fasilitas",
-                  style: TextStyle(color: Colors.grey)),
-            ),
-          )
-        else
-          ...list.map(_cardFasilitas).toList(),
+        ...list.map(_cardFasilitas).toList(),
       ],
     );
   }
@@ -261,7 +329,8 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(20)),
             child: Image.asset(
               data["gambar"],
               height: 180,
@@ -274,15 +343,20 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(data["nama"],
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  data["nama"],
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 Text(data["lokasi"] ?? ""),
                 const SizedBox(height: 6),
-                Text(buka ? "BUKA" : "TUTUP",
-                    style: TextStyle(
-                        color: buka ? Colors.green : Colors.red,
-                        fontWeight: FontWeight.bold)),
+                Text(
+                  buka ? "BUKA" : "TUTUP",
+                  style: TextStyle(
+                    color: buka ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
