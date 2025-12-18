@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/facility_service.dart';
+import 'detail_fasilitas_screen.dart';
 
 class DaftarFasilitasScreen extends StatefulWidget {
   final String? initialCategory;
@@ -126,9 +127,14 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
 
     return GestureDetector(
       onTap: () {
-        showDialog(
-          context: context,
-          builder: (_) => BookingDialog(facility: data),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DetailFasilitasScreen(
+              title: data['name'],
+              facilityData: data,
+            ),
+          ),
         );
       },
       child: Card(

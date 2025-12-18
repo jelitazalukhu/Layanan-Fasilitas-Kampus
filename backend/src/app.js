@@ -17,6 +17,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 app.use('/api/auth', authRoutes);
 app.use('/api', facilityRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/uploads', express.static('uploads'));
 
 // Basic health check
 app.get('/', (req, res) => {

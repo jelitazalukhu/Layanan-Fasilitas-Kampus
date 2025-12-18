@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -88,11 +89,16 @@ class AuthService {
 
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/auth/me'),
+        Uri.parse('$baseUrl/me'),
         headers: {
           'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       );
+
+      print('getProfile status: ${response.statusCode}');
+      print('getProfile body: ${response.body}');
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -106,7 +112,7 @@ class AuthService {
     }
   }
 
-  Future<bool> updateProfile(String name, String? password) async {
+  Future<bool> updateProfile(String name, String? password, {File? imageFile}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
@@ -115,21 +121,32 @@ class AuthService {
     }
 
     try {
-      final body = {'name': name};
+      final request = http.MultipartRequest('PUT', Uri.parse('$baseUrl/update'));
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+      });
+
+      request.fields['name'] = name;
       if (password != null && password.isNotEmpty) {
-        body['password'] = password;
+        request.fields['password'] = password;
       }
 
-      final response = await http.put(
-        Uri.parse('$baseUrl/auth/update'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(body),
-      );
+      if (imageFile != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'avatar',
+          imageFile.path,
+        ));
+      }
 
-      return response.statusCode == 200;
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print('Update failed: ${response.body}');
+        return false;
+      }
     } catch (e) {
       throw Exception('Connection error: $e');
     }

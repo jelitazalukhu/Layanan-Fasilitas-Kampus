@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart'; // Add this dependency
 import '../services/auth_service.dart';
 import 'auth_screen.dart'; // For logout redirection
 
@@ -18,6 +20,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   
   late TextEditingController _nameController;
   late TextEditingController _passwordController;
+  File? _imageFile;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -25,6 +29,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _nameController = TextEditingController();
     _passwordController = TextEditingController();
     _loadProfile();
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
   }
 
   Future<void> _loadProfile() async {
@@ -60,6 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final success = await _authService.updateProfile(
         _nameController.text,
         _passwordController.text.isEmpty ? null : _passwordController.text,
+        imageFile: _imageFile,
       );
 
       if (success) {
@@ -128,10 +142,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
           key: _formKey,
           child: Column(
             children: [
-              const CircleAvatar(
-                radius: 50,
-                backgroundColor: Color(0xFF065F46),
-                child: Icon(Icons.person, size: 50, color: Colors.white),
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: const Color(0xFF065F46),
+                    backgroundImage: _imageFile != null
+                        ? FileImage(_imageFile!)
+                        : (_user != null && _user!['avatarUrl'] != null)
+                            ? NetworkImage("http://localhost:3000${_user!['avatarUrl']}") as ImageProvider
+                            : null,
+                    child: (_imageFile == null && (_user == null || _user!['avatarUrl'] == null))
+                        ? const Icon(Icons.person, size: 50, color: Colors.white)
+                        : null,
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: InkWell(
+                      onTap: _pickImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.camera_alt, color: Color(0xFF065F46), size: 20),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
               

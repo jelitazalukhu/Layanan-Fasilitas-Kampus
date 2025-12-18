@@ -83,7 +83,8 @@ exports.getProfile = async (req, res) => {
     try {
         const user = await prisma.user.findUnique({
             where: { id: req.user.userId },
-            select: { id: true, name: true, email: true, nim: true } // Exclude password
+            where: { id: req.user.userId },
+            select: { id: true, name: true, email: true, nim: true, avatarUrl: true } // Exclude password
         });
         if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user);
@@ -103,11 +104,15 @@ exports.updateProfile = async (req, res) => {
         if (password) {
             data.password = await bcrypt.hash(password, 10);
         }
+        if (req.file) {
+            // Save relative path
+            data.avatarUrl = '/uploads/' + req.file.filename;
+        }
 
         const user = await prisma.user.update({
             where: { id: userId },
             data,
-            select: { id: true, name: true, email: true, nim: true }
+            select: { id: true, name: true, email: true, nim: true, avatarUrl: true }
         });
 
         res.json({ message: 'Profile updated', user });
