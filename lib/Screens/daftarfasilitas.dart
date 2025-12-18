@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'vokasi.dart';
+import 'fmipa.dart';
+
 
 /* ======================
    DATA FASILITAS UMUM
@@ -286,10 +288,21 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
                   builder: (_) => const VokasiScreen(),
                 ),
               );
-            } else {
+            } 
+            else if (f["nama"] ==
+                "Fakultas Matematika dan Ilmu Pengetahuan Alam") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const FmipaScreen(),
+                ),
+              );
+            } 
+            else {
               setState(() => selectedFakultas = f["nama"]);
             }
           },
+
           child: Card(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
