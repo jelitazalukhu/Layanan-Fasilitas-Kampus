@@ -24,7 +24,7 @@ exports.getAllFacilities = async (req, res) => {
 // Create a booking
 exports.createBooking = async (req, res) => {
     try {
-        const { facilityId, date, startTime, endTime } = req.body;
+        const { facilityId, date, startTime, endTime, roomName } = req.body;
         const userId = req.user.userId; // From authMiddleware
 
         // Basic validation
@@ -44,34 +44,38 @@ exports.createBooking = async (req, res) => {
             });
         }
 
-        // Check availability (simplistic overlap check)
-        // Parse date to start of day for comparison if needed, or assume ISO string
+        // Check availability
         const bookingDate = new Date(date);
 
-        const conflicts = await prisma.booking.findMany({
-            where: {
-                facilityId: parseInt(facilityId),
-                date: bookingDate,
-                status: { not: 'REJECTED' },
-                OR: [
-                    {
-                        AND: [
-                            { startTime: { lte: startTime } },
-                            { endTime: { gt: startTime } },
-                        ],
-                    },
-                    {
-                        AND: [
-                            { startTime: { lt: endTime } },
-                            { endTime: { gte: endTime } },
-                        ],
-                    },
-                ],
-            },
-        });
+        // Build conflict query
+        let conflictWhere = {
+            facilityId: parseInt(facilityId),
+            date: bookingDate,
+            status: { not: 'REJECTED' },
+            OR: [
+                {
+                    AND: [
+                        { startTime: { lte: startTime } },
+                        { endTime: { gt: startTime } },
+                    ],
+                },
+                {
+                    AND: [
+                        { startTime: { lt: endTime } },
+                        { endTime: { gte: endTime } },
+                    ],
+                },
+            ],
+        };
+
+        if (roomName) {
+            conflictWhere.roomName = roomName;
+        }
+
+        const conflicts = await prisma.booking.findMany({ where: conflictWhere });
 
         if (conflicts.length > 0) {
-            return res.status(400).json({ message: 'Facility is already booked for this time slot' });
+            return res.status(400).json({ message: 'Slot is already booked' });
         }
 
         const booking = await prisma.booking.create({
@@ -81,16 +85,18 @@ exports.createBooking = async (req, res) => {
                 date: bookingDate,
                 startTime,
                 endTime,
+                roomName,
                 status: 'CONFIRMED', // Auto confirm for now
             },
         });
 
         // Create notification
+        const specificPlace = roomName ? `${facility.name} - ${roomName}` : facility.name;
         await prisma.notification.create({
             data: {
                 userId,
                 title: 'Booking Berhasil!',
-                message: `Booking ${facility.name} pada tanggal ${date} jam ${startTime}:00 - ${endTime}:00 berhasil.`,
+                message: `Booking ${specificPlace} pada tanggal ${date.split('T')[0]} jam ${startTime}:00 - ${endTime}:00 berhasil.`,
             }
         });
 

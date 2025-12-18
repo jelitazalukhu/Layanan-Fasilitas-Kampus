@@ -38,6 +38,7 @@ model Booking {
   date       DateTime
   startTime  Int
   endTime    Int
+  roomName   String?
   status     String   @default("PENDING")
   createdAt  DateTime @default(now())
   

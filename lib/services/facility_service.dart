@@ -23,7 +23,7 @@ class FacilityService {
   }
 
   Future<Map<String, dynamic>> createBooking(
-      int facilityId, DateTime date, int startTime, int endTime) async {
+      int facilityId, DateTime date, int startTime, int endTime, {String? roomName}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
@@ -32,18 +32,24 @@ class FacilityService {
     }
 
     try {
+      final body = {
+        'facilityId': facilityId,
+        'date': date.toIso8601String(),
+        'startTime': startTime,
+        'endTime': endTime,
+      };
+
+      if (roomName != null) {
+        body['roomName'] = roomName;
+      }
+
       final response = await http.post(
         Uri.parse('$baseUrl/booking'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({
-          'facilityId': facilityId,
-          'date': date.toIso8601String(),
-          'startTime': startTime,
-          'endTime': endTime,
-        }),
+        body: jsonEncode(body),
       );
 
       final data = jsonDecode(response.body);
