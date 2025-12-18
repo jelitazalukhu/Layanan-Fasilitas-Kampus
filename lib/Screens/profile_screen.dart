@@ -4,7 +4,7 @@ import '../Screens/ganti_pw.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  // dummy data (nanti dari auth / database)
+  // backend ubah data disini
   final String name = "Jelita Zalukhu";
   final String nim = "221402XXX";
   final String prodi = "Teknik Informatika";
@@ -17,7 +17,6 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF3FBF6),
 
-      /// ================= APP BAR =================
       appBar: AppBar(
         elevation: 0,
         backgroundColor: const Color(0xFFF3FBF6),
@@ -33,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            /// ================= HEADER PROFIL =================
+
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -42,10 +41,10 @@ class ProfileScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  /// AVATAR INISIAL
+                  
                   CircleAvatar(
                     radius: 48,
-                    backgroundColor: const Color(0xFF22C55E),
+                    backgroundColor: const Color(0xFF065F46),
                     child: Text(
                       _getInitials(name),
                       style: const TextStyle(
@@ -73,7 +72,6 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            /// ================= INFORMASI AKUN =================
             _ProfileSection(
               title: "Informasi Akun",
               children: [
@@ -92,7 +90,6 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            /// ================= PENGATURAN AKUN =================
             _ProfileSection(
               title: "Pengaturan Akun",
               children: [
@@ -123,7 +120,7 @@ class ProfileScreen extends StatelessWidget {
                   title: "Logout",
                   isDanger: true,
                   onTap: () {
-                    // TODO: logout logic
+
                   },
                 ),
               ],
@@ -134,8 +131,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
-
-/// ================= WIDGET PENDUKUNG =================
 
 class _ProfileSection extends StatelessWidget {
   final String title;
@@ -232,8 +227,6 @@ class _ProfileAction extends StatelessWidget {
   }
 }
 
-/// ================= ABOUT APP =================
-
 class AboutAppScreen extends StatelessWidget {
   const AboutAppScreen({super.key});
 
@@ -260,8 +253,6 @@ class AboutAppScreen extends StatelessWidget {
     );
   }
 }
-
-/// ================= HELPER =================
 
 String _getInitials(String name) {
   final parts = name.trim().split(" ");
