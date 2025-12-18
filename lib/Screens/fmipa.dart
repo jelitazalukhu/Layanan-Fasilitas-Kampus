@@ -72,6 +72,9 @@ class _FmipaScreenState extends State<FmipaScreen> {
   String selectedUnit = "Unit 2";
   int selectedLantai = 1;
 
+  String sortBy = "nama_asc";          // A-Z / Z-A
+  bool showOnlyKosong = false;         // filter hanya kosong
+
   bool get unitTersedia =>
       selectedUnit == "Unit 2" || selectedUnit == "Unit 4";
 
@@ -91,6 +94,8 @@ class _FmipaScreenState extends State<FmipaScreen> {
           if (unitTersedia) ...[
             _dropdownLantai(),
             const SizedBox(height: 16),
+            _sortBar(),
+            const SizedBox(height: 8),
             _gridIsi(),
           ] else
             _belumTersedia(),
@@ -144,6 +149,53 @@ class _FmipaScreenState extends State<FmipaScreen> {
   }
 
   /* ======================
+     SORT & FILTER BAR
+     ====================== */
+
+  Widget _sortBar() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Dropdown sort
+        DropdownButton<String>(
+          value: sortBy,
+          items: const [
+            DropdownMenuItem(
+              value: "nama_asc",
+              child: Text("Urutkan: Nama A-Z"),
+            ),
+            DropdownMenuItem(
+              value: "nama_desc",
+              child: Text("Urutkan: Nama Z-A"),
+            ),
+          ],
+          onChanged: (value) {
+            if (value == null) return;
+            setState(() {
+              sortBy = value;
+            });
+          },
+        ),
+
+        // Toggle hanya kosong
+        Row(
+          children: [
+            const Text("Hanya kosong"),
+            Switch(
+              value: showOnlyKosong,
+              onChanged: (v) {
+                setState(() {
+                  showOnlyKosong = v;
+                });
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /* ======================
      GRID ISI
      ====================== */
 
@@ -153,21 +205,41 @@ class _FmipaScreenState extends State<FmipaScreen> {
             ? unit2Lab[selectedLantai]!
             : unit4Ruangan[selectedLantai]!;
 
+    // copy ke filtered
+    var filtered = List<Map<String, dynamic>>.from(data);
+
+    // filter hanya KOSONG (kalau nanti ada status lain)
+    if (showOnlyKosong) {
+      filtered = filtered.where((e) => e["status"] == "KOSONG").toList();
+    }
+
+    // sorting
+    filtered.sort((a, b) {
+      final namaA = a["nama"].toString();
+      final namaB = b["nama"].toString();
+
+      if (sortBy == "nama_desc") {
+        return namaB.compareTo(namaA); // Z-A
+      }
+      return namaA.compareTo(namaB);   // A-Z
+    });
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: data.length,
+      itemCount: filtered.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
       itemBuilder: (_, i) {
-        final d = data[i];
+        final d = filtered[i];
 
         return Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(

@@ -60,20 +60,25 @@ class _VokasiScreenState extends State<VokasiScreen> {
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = "";
 
+  // SORT & FILTER
+  String sortBy = "nama_asc"; // "nama_asc" atau "nama_desc"
+  bool showOnlyKosong = false;
+
   List<Map<String, dynamic>> get vokasiDataTampil {
     List<Map<String, dynamic>> data;
 
     if (selectedVokasiBar == "Ruang Kelas") {
-      data = vokasiRuangKelas;
+      data = List<Map<String, dynamic>>.from(vokasiRuangKelas);
       if (selectedLantai != null) {
         data = data.where((e) => e["lantai"] == selectedLantai).toList();
       }
     } else if (selectedVokasiBar == "Laboratorium") {
-      data = vokasiLab;
+      data = List<Map<String, dynamic>>.from(vokasiLab);
     } else {
-      data = vokasiProyektor;
+      data = List<Map<String, dynamic>>.from(vokasiProyektor);
     }
 
+    // filter search
     if (searchQuery.isNotEmpty) {
       data = data
           .where((e) => e["nama"]
@@ -82,6 +87,23 @@ class _VokasiScreenState extends State<VokasiScreen> {
               .contains(searchQuery.toLowerCase()))
           .toList();
     }
+
+    // filter hanya yang KOSONG
+    if (showOnlyKosong) {
+      data = data.where((e) => e["status"] == "KOSONG").toList();
+    }
+
+    // sorting Nama A-Z / Z-A
+    data.sort((a, b) {
+      final namaA = a["nama"].toString();
+      final namaB = b["nama"].toString();
+
+      if (sortBy == "nama_desc") {
+        return namaB.compareTo(namaA); // Z-A
+      }
+      // default: A-Z
+      return namaA.compareTo(namaB);
+    });
 
     return data;
   }
@@ -123,6 +145,8 @@ class _VokasiScreenState extends State<VokasiScreen> {
           _searchBar(),
           const SizedBox(height: 12),
           _barVokasi(),
+          const SizedBox(height: 12),
+          _sortFilterBar(),
           const SizedBox(height: 12),
           if (selectedVokasiBar == "Ruang Kelas") _dropdownLantai(),
           const SizedBox(height: 12),
@@ -179,6 +203,49 @@ class _VokasiScreenState extends State<VokasiScreen> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _sortFilterBar() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Dropdown sort
+        DropdownButton<String>(
+          value: sortBy,
+          items: const [
+            DropdownMenuItem(
+              value: "nama_asc",
+              child: Text("Urutkan: Nama A-Z"),
+            ),
+            DropdownMenuItem(
+              value: "nama_desc",
+              child: Text("Urutkan: Nama Z-A"),
+            ),
+          ],
+          onChanged: (value) {
+            if (value == null) return;
+            setState(() {
+              sortBy = value;
+            });
+          },
+        ),
+
+        // Toggle hanya yang kosong
+        Row(
+          children: [
+            const Text("Hanya kosong"),
+            Switch(
+              value: showOnlyKosong,
+              onChanged: (value) {
+                setState(() {
+                  showOnlyKosong = value;
+                });
+              },
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -266,8 +333,9 @@ class _VokasiScreenState extends State<VokasiScreen> {
       itemBuilder: (_, i) {
         final p = vokasiDataTampil[i];
         return Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -282,7 +350,7 @@ class _VokasiScreenState extends State<VokasiScreen> {
               ElevatedButton(
                 onPressed: () => _popupBooking(p),
                 child: const Text("Booking"),
-              )
+              ),
             ],
           ),
         );
