@@ -1,4 +1,4 @@
-# Layanan-Fasilitas-Kampus
+# CampusFind
 
 Projek Akhir Mata Kuliah Pemrograman Mobile Kelompok 7
 
@@ -42,7 +42,7 @@ CampusFind  adalah aplikasi mobile berbasis Flutter yang dirancang untuk memudah
 - **Design & Layout:** Material Design (Flutter built-in)  
 - **Platform yang didukung:** Android & iOS  
 
-## How to Run Application
+## Cara Menjalankan Aplikasi
 Panduan berikut menjelaskan langkah-langkah menjalankan aplikasi **CampusFind**.
 1. **Clone repository**  
    Salin project dari GitHub ke komputer:  
@@ -69,3 +69,4 @@ Panduan berikut menjelaskan langkah-langkah menjalankan aplikasi **CampusFind**.
      flutter pub get
    * Jika Flutter tidak dikenali: pastikan Flutter sudah terinstall dan PATH sudah di-set di environment variables.
    * Jika device tidak muncul: periksa emulator atau pastikan perangkat fisik berada dalam mode developer.
+
