@@ -1,4 +1,4 @@
-# Layanan-Fasilitas-Kampus
+# CampusFind
 
 Projek Akhir Mata Kuliah Pemrograman Mobile Kelompok 7
 
@@ -28,8 +28,8 @@ CampusFind  adalah aplikasi mobile berbasis Flutter yang dirancang untuk memudah
 8. Profil Pengguna: Menampilkan informasi pengguna, pengaturan akun, dan preferensi aplikasi.<br>
 
 ## Technical Stack Application
-- **Flutter:** 3.13.0 (sesuaikan dengan hasil `flutter --version`)  
-- **Dart SDK:** 3.9.0 (sesuai environment di pubspec.yaml)  
+- **Flutter:** 3.13.0
+- **Dart SDK:** 3.9.0
 - **State Management:** Provider 6.1.2  
 - **UI & Icons:**  
   - Cupertino Icons 1.0.8  
@@ -40,32 +40,43 @@ CampusFind  adalah aplikasi mobile berbasis Flutter yang dirancang untuk memudah
 - **Assets:**  
   - Images: `usu_logo.png`, `usuu.jpg`, `fakultas.jpg`, `masjid.jpg`, `perpus.jpg`, `poli.jpg`, `kantin.jpg`, `peta.jpg`, `kampus_usu.jpg`, `fakultas-ilmu-budaya.webp`, `auditorium.webp`, `masjid_ar-rahman.jpg`, `perpustakaan.jpeg`  
 - **Design & Layout:** Material Design (Flutter built-in)  
-- **Platform yang didukung:** Android & iOS  
+- **Platform yang didukung:** Android & iOS
 
-## How to Run Application
+## Cara Menjalankan Aplikasi
 Panduan berikut menjelaskan langkah-langkah menjalankan aplikasi **CampusFind**.
 1. **Clone repository**  
-   Salin project dari GitHub ke komputer:  
+   Salin project dari GitHub ke komputer:
+   ```bash
    git clone https://github.com/jelitazalukhu/Layanan-Fasilitas-Kampus.git
 2. **Masuk ke folder project**
    Pindah ke direktori project:
+   ```bash
    cd Layanan-Fasilitas-Kampus
-3. **Install dependencies**
+4. **Install dependencies**
    Install semua package yang diperlukan aplikasi:
+   ```bash
    flutter pub get
 4. **Cek device atau emulator**
    Pastikan tersedia device untuk menjalankan aplikasi:
+   ```bash
    flutter devices
+   ```
    Bisa menggunakan emulator Android/iOS atau perangkat fisik yang terhubung.
 5. **Jalankan aplikasi**
    Jalankan aplikasi pada device yang tersedia:
+   ```bash
    flutter run
-6. **Mode release (opsional)**
+7. **Mode release (opsional)**
    Untuk versi final yang lebih cepat dan siap digunakan:
+   ```bash
    flutter run --release
-7. **Troubleshooting**
-   * Jika terjadi error dependency:
-     flutter clean
-     flutter pub get
-   * Jika Flutter tidak dikenali: pastikan Flutter sudah terinstall dan PATH sudah di-set di environment variables.
-   * Jika device tidak muncul: periksa emulator atau pastikan perangkat fisik berada dalam mode developer.
+8. Troubleshooting
+   Jika terjadi error dependency:
+   ```bash
+   flutter clean
+   flutter pub get
+   ```
+   Jika Flutter tidak dikenali, pastikan Flutter sudah terinstall dan PATH telah dikonfigurasi.
+   Jika device tidak muncul, periksa emulator atau pastikan perangkat fisik berada dalam mode developer.
+
+
