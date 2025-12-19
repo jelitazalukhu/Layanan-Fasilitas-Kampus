@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/facility_service.dart';
+import 'package:intl/intl.dart';
 
 /* ======================
    DATA VOKASI
@@ -7,38 +9,50 @@ import 'package:flutter/material.dart';
 final List<Map<String, dynamic>> vokasiRuangKelas = [
   for (int i = 201; i <= 207; i++)
     {
+      "facilityId": 2, // id facility di tabel `facility`
       "jenis": "Ruang Kelas",
       "nama": "RB$i",
       "lantai": 2,
       "status": "KOSONG",
       "gambar": "assets/usuu.jpg",
+      "bookingStart": null,
+      "bookingEnd": null,
     },
   for (int i = 301; i <= 307; i++)
     {
+      "facilityId": 2,
       "jenis": "Ruang Kelas",
       "nama": "RB$i",
       "lantai": 3,
       "status": "KOSONG",
       "gambar": "assets/usuu.jpg",
+      "bookingStart": null,
+      "bookingEnd": null,
     },
 ];
 
 final List<Map<String, dynamic>> vokasiLab = [
   for (var lab in ["A", "B", "C", "D", "E"])
     {
+      "facilityId": 2,
       "jenis": "Laboratorium",
       "nama": "Lab $lab",
       "status": "KOSONG",
       "gambar": "assets/usuu.jpg",
+      "bookingStart": null,
+      "bookingEnd": null,
     },
 ];
 
 final List<Map<String, dynamic>> vokasiProyektor = [
   for (int i = 1; i <= 10; i++)
     {
+      "facilityId": 2,
       "jenis": "Proyektor",
       "nama": "Proyektor V${i.toString().padLeft(2, '0')}",
       "status": "TERSEDIA",
+      "bookingStart": null,
+      "bookingEnd": null,
     },
 ];
 
@@ -88,9 +102,14 @@ class _VokasiScreenState extends State<VokasiScreen> {
           .toList();
     }
 
-    // filter hanya yang KOSONG
+    // filter hanya yang "kosong"/available
     if (showOnlyKosong) {
-      data = data.where((e) => e["status"] == "KOSONG").toList();
+      data = data.where((e) {
+        final status = e["status"]?.toString().toUpperCase() ?? "";
+        // ruang/lab dianggap kosong jika "KOSONG"
+        // proyektor dianggap kosong jika "TERSEDIA"
+        return status == "KOSONG" || status == "TERSEDIA";
+      }).toList();
     }
 
     // sorting Nama A-Z / Z-A
@@ -108,26 +127,162 @@ class _VokasiScreenState extends State<VokasiScreen> {
     return data;
   }
 
+  // ==== POPUP BOOKING (PAKAI BACKEND) ====
+
   void _popupBooking(Map<String, dynamic> data) {
+    final service = FacilityService();
+    DateTime selectedDate = DateTime.now();
+    TimeOfDay startTime = const TimeOfDay(hour: 9, minute: 0);
+    TimeOfDay endTime = const TimeOfDay(hour: 11, minute: 0);
+    bool isLoading = false;
+
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Booking ${data["nama"]}"),
-        content: const Text(
-          "Booking jam dan durasi akan muncul di sini.\n"
-          "Status masih placeholder.\n"
-          "Peringatan 30 menit sebelum habis.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Tutup"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Booking"),
-          ),
-        ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setStateDialog) {
+          Future<void> pickDate() async {
+            final picked = await showDatePicker(
+              context: ctx,
+              initialDate: selectedDate,
+              firstDate: DateTime.now(),
+              lastDate: DateTime(2101),
+            );
+            if (picked != null) {
+              setStateDialog(() => selectedDate = picked);
+            }
+          }
+
+          Future<void> pickTime(bool isStart) async {
+            final picked = await showTimePicker(
+              context: ctx,
+              initialTime: isStart ? startTime : endTime,
+            );
+            if (picked != null) {
+              setStateDialog(() {
+                if (isStart) {
+                  startTime = picked;
+                } else {
+                  endTime = picked;
+                }
+              });
+            }
+          }
+
+          Future<void> doBooking() async {
+            setStateDialog(() => isLoading = true);
+
+            final facilityId = data['facilityId'] as int;
+
+            final result = await service.createBooking(
+              facilityId,
+              selectedDate,
+              startTime.hour,
+              endTime.hour,
+            );
+
+            setStateDialog(() => isLoading = false);
+            if (!mounted) return;
+
+            if (result['success']) {
+              // simpan waktu booking di item yg ditekan
+              final start = DateTime(
+                selectedDate.year,
+                selectedDate.month,
+                selectedDate.day,
+                startTime.hour,
+                startTime.minute,
+              );
+              final end = DateTime(
+                selectedDate.year,
+                selectedDate.month,
+                selectedDate.day,
+                endTime.hour,
+                endTime.minute,
+              );
+
+              if (data["jenis"] == "Proyektor") {
+                // semua proyektor ikut terpakai
+                setState(() {
+                  for (final proj in vokasiProyektor) {
+                    proj['bookingStart'] = start;
+                    proj['bookingEnd'] = end;
+                    proj['status'] = "TERPAKAI";
+                  }
+                });
+              } else {
+                // ruang / lab: hanya item ini
+                data['bookingStart'] = start;
+                data['bookingEnd'] = end;
+                data["status"] = "TERISI";
+                setState(() {});
+              }
+            }
+
+            Navigator.pop(ctx);
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result['success']
+                    ? "Booking berhasil!"
+                    : (result['message'] ?? "Booking gagal")),
+                backgroundColor:
+                    result['success'] ? Colors.green : Colors.red,
+              ),
+            );
+          }
+
+          return AlertDialog(
+            title: Text("Booking ${data["nama"]}"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: const Text("Tanggal"),
+                  subtitle: Text(DateFormat('yyyy-MM-dd').format(selectedDate)),
+                  trailing: const Icon(Icons.edit),
+                  onTap: pickDate,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ListTile(
+                        title: const Text("Mulai"),
+                        subtitle: Text(startTime.format(ctx)),
+                        onTap: () => pickTime(true),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListTile(
+                        title: const Text("Selesai"),
+                        subtitle: Text(endTime.format(ctx)),
+                        onTap: () => pickTime(false),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text("Batal"),
+              ),
+              ElevatedButton(
+                onPressed: isLoading ? null : doBooking,
+                child: isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text("Booking"),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -210,7 +365,6 @@ class _VokasiScreenState extends State<VokasiScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Dropdown sort
         DropdownButton<String>(
           value: sortBy,
           items: const [
@@ -230,11 +384,9 @@ class _VokasiScreenState extends State<VokasiScreen> {
             });
           },
         ),
-
-        // Toggle hanya yang kosong
         Row(
           children: [
-            const Text("Hanya kosong"),
+            const Text("Hanya tersedia"),
             Switch(
               value: showOnlyKosong,
               onChanged: (value) {
@@ -263,12 +415,30 @@ class _VokasiScreenState extends State<VokasiScreen> {
   }
 
   /* ======================
-     CARD RUANG & LAB (ICON)
+     CARD RUANG & LAB
      ====================== */
 
   Widget _cardVokasi(Map<String, dynamic> data) {
     final bool isRuangKelas = data["jenis"] == "Ruang Kelas";
     final bool isLab = data["jenis"] == "Laboratorium";
+
+    // reset otomatis kalau waktu booking sudah lewat
+    if (data['bookingEnd'] != null &&
+        data['bookingEnd'] is DateTime &&
+        DateTime.now().isAfter(data['bookingEnd'])) {
+      data['status'] = data["jenis"] == "Proyektor" ? "TERSEDIA" : "KOSONG";
+      data['bookingStart'] = null;
+      data['bookingEnd'] = null;
+    }
+
+    // warna status
+    Color statusColor;
+    final status = data["status"]?.toString().toUpperCase() ?? "";
+    if (status == "KOSONG" || status == "TERSEDIA") {
+      statusColor = Colors.green;
+    } else {
+      statusColor = Colors.red;
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -297,8 +467,8 @@ class _VokasiScreenState extends State<VokasiScreen> {
             const SizedBox(height: 6),
             Text(
               data["status"],
-              style: const TextStyle(
-                color: Colors.green,
+              style: TextStyle(
+                color: statusColor,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -317,7 +487,7 @@ class _VokasiScreenState extends State<VokasiScreen> {
   }
 
   /* ======================
-     GRID PROYEKTOR (ASLI)
+     GRID PROYEKTOR
      ====================== */
 
   Widget _gridProyektor() {
@@ -332,6 +502,20 @@ class _VokasiScreenState extends State<VokasiScreen> {
       ),
       itemBuilder: (_, i) {
         final p = vokasiDataTampil[i];
+
+        // reset otomatis kalau waktu booking sudah lewat
+        if (p['bookingEnd'] != null &&
+            p['bookingEnd'] is DateTime &&
+            DateTime.now().isAfter(p['bookingEnd'])) {
+          p['status'] = "TERSEDIA";
+          p['bookingStart'] = null;
+          p['bookingEnd'] = null;
+        }
+
+        final status = p["status"]?.toString().toUpperCase() ?? "";
+        final Color statusColor =
+            (status == "TERSEDIA") ? Colors.green : Colors.red;
+
         return Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -345,10 +529,16 @@ class _VokasiScreenState extends State<VokasiScreen> {
                 p["nama"],
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              Text(p["status"]),
+              Text(
+                p["status"],
+                style: TextStyle(
+                  color: statusColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: 8),
               ElevatedButton(
-                onPressed: () => _popupBooking(p),
+                onPressed: status == "TERSEDIA" ? () => _popupBooking(p) : null,
                 child: const Text("Booking"),
               ),
             ],

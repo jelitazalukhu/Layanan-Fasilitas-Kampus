@@ -2,15 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/facility_service.dart';
 import 'detail_fasilitas_screen.dart';
+import 'vokasi.dart';
+import 'fmipa.dart';
+
+/// =====================
+/// DAFTAR FAKULTAS (STATIS)
+/// =====================
+
+final List<Map<String, String>> daftarFakultas = [
+  {"nama": "Fakultas Ilmu Budaya"},
+  {"nama": "Fakultas Ilmu Sosial dan Ilmu Politik"},
+  {"nama": "Fakultas Keperawatan"},
+  {"nama": "Fakultas Psikologi"},
+  {"nama": "Fakultas Farmasi"},
+  {"nama": "Fakultas Ilmu Komputer dan Teknologi Informasi"},
+  {"nama": "Fakultas Kedokteran Gigi"},
+  {"nama": "Fakultas Kesehatan Masyarakat"},
+  {"nama": "Fakultas Pertanian"},
+  {"nama": "Fakultas Hukum"},
+  {"nama": "Fakultas Kedokteran"},
+  {"nama": "Fakultas Teknik"},
+  {"nama": "Fakultas Ekonomi dan Bisnis"},
+  {"nama": "Fakultas Matematika dan Ilmu Pengetahuan Alam"},
+  {"nama": "Fakultas Vokasi"},
+];
+
+/// =====================
+/// SCREEN
+/// =====================
 
 class DaftarFasilitasScreen extends StatefulWidget {
   final String? initialCategory;
   final String? initialFakultas;
 
   const DaftarFasilitasScreen({
-    super.key, 
-    this.initialCategory, 
-    this.initialFakultas
+    super.key,
+    this.initialCategory,
+    this.initialFakultas,
   });
 
   @override
@@ -50,9 +78,19 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
-            Text("CampusFind", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
+            Text(
+              "CampusFind",
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
             SizedBox(height: 2),
-            Text("Universitas Sumatera Utara", style: TextStyle(color: Colors.grey, fontSize: 12)),
+            Text(
+              "Universitas Sumatera Utara",
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
           ],
         ),
         leading: const BackButton(color: Colors.black),
@@ -68,35 +106,45 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
           }
 
           final allFacilities = snapshot.data ?? [];
-          
+
           // Filter Logic
           List<dynamic> dataTampil;
           if (selectedKategori == "Semua") {
             dataTampil = allFacilities;
           } else {
-             // Case insensitive filter if needed, but backend sends specific categories
-             dataTampil = allFacilities.where((f) => f['category'] == selectedKategori).toList();
+            dataTampil = allFacilities
+                .where((f) => f['category'] == selectedKategori)
+                .toList();
           }
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-               _kategori(),
-               const SizedBox(height: 16),
-               
-               if (dataTampil.isEmpty)
+              _kategori(),
+              const SizedBox(height: 16),
+
+              // Kalau kategori = Fakultas → tampilkan grid fakultas lokal
+              if (selectedKategori == "Fakultas") ...[
+                _gridFakultas(),
+              ] else ...[
+                // Kategori lain → pakai data dari backend seperti biasa
+                if (dataTampil.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(20),
                     child: Center(child: Text("Tidak ada fasilitas")),
                   ),
-
-               ...dataTampil.map((data) => _cardFasilitas(data)).toList(),
+                ...dataTampil.map((data) => _cardFasilitas(data)).toList(),
+              ],
             ],
           );
         },
       ),
     );
   }
+
+  /// =====================
+  /// WIDGET PENDUKUNG
+  /// =====================
 
   Widget _kategori() {
     final kategori = ["Semua", "Fasilitas Umum", "Fakultas", "Masjid"];
@@ -118,6 +166,74 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+
+  /// GRID SEMUA FAKULTAS
+  /// Hanya Vokasi & FMIPA yang membuka screen khusus
+
+  Widget _gridFakultas() {
+    return SizedBox(
+      height: 500, // bisa disesuaikan
+      child: GridView.builder(
+        padding: const EdgeInsets.only(bottom: 16),
+        itemCount: daftarFakultas.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+        ),
+        itemBuilder: (context, index) {
+          final f = daftarFakultas[index];
+          return GestureDetector(
+            onTap: () {
+              if (f["nama"] == "Fakultas Vokasi") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const VokasiScreen()),
+                );
+              } else if (f["nama"] ==
+                  "Fakultas Matematika dan Ilmu Pengetahuan Alam") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const FmipaScreen()),
+                );
+              } else {
+                setState(() => selectedFakultas = f["nama"]);
+              }
+            },
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.account_balance,
+                        size: 36,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        f["nama"]!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -144,14 +260,18 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
               child: Image.asset(
                 data['imageUrl'] ?? 'assets/usu_logo.png', // Fallback
                 height: 180,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => 
-                    Container(height: 180, color: Colors.grey[300], child: const Icon(Icons.broken_image)),
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 180,
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.broken_image),
+                ),
               ),
             ),
             Padding(
@@ -161,19 +281,30 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
                 children: [
                   Text(
                     data['name'],
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(data['location'] ?? ""),
                   const SizedBox(height: 6),
                   Text(
-                    buka ? "BUKA (${data['openHour']}:00 - ${data['closeHour']}:00)" : "TUTUP",
+                    buka
+                        ? "BUKA (${data['openHour']}:00 - ${data['closeHour']}:00)"
+                        : "TUTUP",
                     style: TextStyle(
                       color: buka ? Colors.green : Colors.red,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(data['description'] ?? "", style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(
+                    data['description'] ?? "",
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -183,6 +314,10 @@ class _DaftarFasilitasScreenState extends State<DaftarFasilitasScreen> {
     );
   }
 }
+
+/// =====================
+/// BOOKING DIALOG
+/// =====================
 
 class BookingDialog extends StatefulWidget {
   final dynamic facility;
@@ -230,7 +365,7 @@ class _BookingDialogState extends State<BookingDialog> {
 
   Future<void> _doBooking() async {
     setState(() => _isLoading = true);
-    
+
     // Convert TimeOfDay to int hour for backend (simplification)
     final startHour = _startTime.hour;
     final endHour = _endTime.hour;
@@ -243,6 +378,8 @@ class _BookingDialogState extends State<BookingDialog> {
       endHour,
     );
 
+    print('BOOKING RESULT: $result'); 
+
     setState(() => _isLoading = false);
 
     if (!mounted) return;
@@ -250,11 +387,17 @@ class _BookingDialogState extends State<BookingDialog> {
     if (result['success']) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Booking Berhasil!"), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text("Booking Berhasil!"),
+          backgroundColor: Colors.green,
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message']), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -274,10 +417,13 @@ class _BookingDialogState extends State<BookingDialog> {
             Text(
               "Booking ${widget.facility['name']}",
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 20),
-            
+
             // Date Picker
             ListTile(
               title: const Text("Tanggal"),
@@ -313,9 +459,19 @@ class _BookingDialogState extends State<BookingDialog> {
                 backgroundColor: const Color(0xFF065F46),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: _isLoading 
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
-                : const Text("Konfirmasi Booking", style: TextStyle(color: Colors.white)),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      "Konfirmasi Booking",
+                      style: TextStyle(color: Colors.white),
+                    ),
             ),
           ],
         ),
