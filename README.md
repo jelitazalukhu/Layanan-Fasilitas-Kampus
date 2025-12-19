@@ -1,7 +1,5 @@
 # CampusFind
 
-Projek Akhir Mata Kuliah Pemrograman Mobile Kelompok 7
-
 ## Kelompok 7 :<br>
 1. Jelita Crisna Zalukhu (241712022)
 2. Maulia Revani Putri (241712009)
@@ -12,20 +10,15 @@ Projek Akhir Mata Kuliah Pemrograman Mobile Kelompok 7
 ## Deskripsi Singkat Aplikasi<br>
 CampusFind  adalah aplikasi mobile berbasis Flutter yang dirancang untuk memudahkan mahasiswa dalam mengakses informasi terkait fasilitas kampus secara cepat dan akurat. Aplikasi ini menyediakan daftar fasilitas lengkap, termasuk fasilitas umum, fakultas, beserta detail seperti lokasi dan gambar visual pendukung. Dengan antarmuka yang interaktif dan responsif, pengguna dapat menavigasi dan menemukan informasi fasilitas dengan mudah, mendukung efisiensi kegiatan sehari-hari di lingkungan kampus, serta meningkatkan pengalaman pengguna dalam memanfaatkan layanan yang tersedia.
 
-## Daftar Fitur
-1. Home Dashboard: Menampilkan ringkasan fasilitas utama, pengumuman, dan navigasi cepat ke fitur lainnya.<br>
-2. Daftar Fasilitas: Menyediakan daftar fasilitas kampus lengkap, termasuk kategori seperti Fakultas, Kantin, Masjid, dan Lainnya.<br>
-3. Detail Fasilitas: Menampilkan informasi detail tiap fasilitas, termasuk:<br>
-   - Lokasi fasilitas<br>
-   - Jam operasional<br>
-   - Fitur yang tersedia (WiFi, AC, parkir, dll.)<br>
-   - Kontak pengelola<br>
-   - Link ke Google Maps untuk navigasi<br>
-4. Peta Kampus: Menyediakan peta interaktif kampus untuk memudahkan navigasi ke fasilitas yang dipilih.<br>
-5. Pencarian Fasilitas: Fitur pencarian untuk menemukan fasilitas berdasarkan nama atau kategori.<br>
-6. Status Fasilitas: Menunjukkan ketersediaan fasilitas secara real-time (misal: buka/tutup, penuh/tersedia).<br>
-7. Login & Register: Pengguna dapat membuat akun baru dan login untuk mengakses fitur personalisasi.<br>
-8. Profil Pengguna: Menampilkan informasi pengguna, pengaturan akun, dan preferensi aplikasi.<br>
+
+## Fitur
+
+* Booking fasilitas Fakultas Vokasi (Ruang Kelas, Laboratorium, Proyektor) dengan pemilihan tanggal dan jam.
+* Booking fasilitas FMIPA (Unit 2 dan Unit 4) dengan pilihan lantai dan ruangan/lab.
+* Filter fasilitas berdasarkan nama, jenis, lantai, dan status ketersediaan.
+* Sorting daftar fasilitas (Nama A–Z dan Z–A).
+* Toggle “Hanya kosong” untuk menampilkan hanya fasilitas yang tersedia.
+* Status fasilitas dinamis (KOSONG, TERISI, TERSEDIA, TERPAKAI) dengan reset otomatis setelah waktu booking berakhir (level UI).
 
 ## Technical Stack Application
 - **Flutter:** 3.13.0
@@ -40,9 +33,20 @@ CampusFind  adalah aplikasi mobile berbasis Flutter yang dirancang untuk memudah
 - **Assets:**  
   - Images: `usu_logo.png`, `usuu.jpg`, `fakultas.jpg`, `masjid.jpg`, `perpus.jpg`, `poli.jpg`, `kantin.jpg`, `peta.jpg`, `kampus_usu.jpg`, `fakultas-ilmu-budaya.webp`, `auditorium.webp`, `masjid_ar-rahman.jpg`, `perpustakaan.jpeg`  
 - **Design & Layout:** Material Design (Flutter built-in)  
-- **Platform yang didukung:** Android & iOS
+- **Platform yang didukung:** Android
 
-## Cara Menjalankan Aplikasi
+
+## How to Run Application
+
+### 1. Persyaratan Sistem
+
+- Flutter SDK terinstal (versi sesuai yang digunakan di proyek).
+- Dart SDK (biasanya sudah termasuk di Flutter).
+- Android Studio atau VS Code dengan ekstensi Flutter.
+- Emulator atau perangkat fisik Android untuk pengujian.
+- Git (opsional, jika clone dari repository).
+
+### 2. Menjalankan Aplikasi Flutter
 Panduan berikut menjelaskan langkah-langkah menjalankan aplikasi **CampusFind**.
 1. **Clone repository**  
    Salin project dari GitHub ke komputer:
@@ -76,7 +80,7 @@ Panduan berikut menjelaskan langkah-langkah menjalankan aplikasi **CampusFind**.
    flutter clean
    flutter pub get
    ```
-   Jika Flutter tidak dikenali, pastikan Flutter sudah terinstall dan PATH telah dikonfigurasi.
+Jika Flutter tidak dikenali, pastikan Flutter sudah terinstall dan PATH telah dikonfigurasi.
    Jika device tidak muncul, periksa emulator atau pastikan perangkat fisik berada dalam mode developer.
 
 
