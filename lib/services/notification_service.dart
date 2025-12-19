@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config.dart';
 
 class NotificationService {
-  static const String baseUrl = 'http://localhost:3000/api/notifications';
+  static String get baseUrl => '${AppConfig.baseUrl}/notifications';
 
   Future<List<dynamic>> getNotifications() async {
     final prefs = await SharedPreferences.getInstance();

@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb; // Add foundation check
 import 'package:image_picker/image_picker.dart'; // Add this dependency
 import '../services/auth_service.dart';
 import 'auth_screen.dart'; // For logout redirection
+import '../config.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -20,7 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   
   late TextEditingController _nameController;
   late TextEditingController _passwordController;
-  File? _imageFile;
+  XFile? _imageFile;
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -35,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _imageFile = pickedFile;
       });
     }
   }
@@ -148,9 +150,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     radius: 50,
                     backgroundColor: const Color(0xFF065F46),
                     backgroundImage: _imageFile != null
-                        ? FileImage(_imageFile!)
+                        ? (kIsWeb 
+                            ? NetworkImage(_imageFile!.path) 
+                            : FileImage(File(_imageFile!.path))) as ImageProvider
                         : (_user != null && _user!['avatarUrl'] != null)
-                            ? NetworkImage("http://localhost:3000${_user!['avatarUrl']}") as ImageProvider
+                            ? NetworkImage("${AppConfig.serverUrl}${_user!['avatarUrl']}") 
                             : null,
                     child: (_imageFile == null && (_user == null || _user!['avatarUrl'] == null))
                         ? const Icon(Icons.person, size: 50, color: Colors.white)

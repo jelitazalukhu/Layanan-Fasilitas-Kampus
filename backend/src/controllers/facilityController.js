@@ -110,11 +110,6 @@ exports.createBooking = async (req, res) => {
 // Seed initial data
 exports.seedFacilities = async (req, res) => {
     try {
-        const count = await prisma.facility.count();
-        if (count > 0) {
-            return res.json({ message: 'Facilities already seeded' });
-        }
-
         const facilities = [
             {
                 name: "Perpustakaan",
@@ -151,14 +146,72 @@ exports.seedFacilities = async (req, res) => {
                 openHour: 4,
                 closeHour: 22,
                 description: "Tempat ibadah utama",
+            },
+            // NEW FACULTIES
+            {
+                name: "Fakultas FMIPA",
+                location: "Kampus USU",
+                imageUrl: "assets/fakultas.jpg",
+                category: "Fakultas",
+                openHour: 8,
+                closeHour: 17,
+                description: "Fakultas Matematika dan Ilmu Pengetahuan Alam",
+            },
+            {
+                name: "Fakultas Vokasi",
+                location: "Kampus USU",
+                imageUrl: "assets/fakultas.jpg",
+                category: "Fakultas",
+                openHour: 8,
+                closeHour: 17,
+                description: "Fakultas Vokasi",
+            },
+            {
+                name: "Fakultas Keperawatan",
+                location: "Kampus USU",
+                imageUrl: "assets/keperawatan.jpg",
+                category: "Fakultas",
+                openHour: 8,
+                closeHour: 17,
+                description: "Fakultas Keperawatan",
+            },
+            {
+                name: "Fakultas Ilmu Budaya",
+                location: "Kampus USU",
+                imageUrl: "assets/fakultas-ilmu-budaya.webp",
+                category: "Fakultas",
+                openHour: 8,
+                closeHour: 17,
+                description: "Fakultas Ilmu Budaya (Sastra)",
+            },
+            {
+                name: "Fakultas Psikologi",
+                location: "Kampus USU",
+                imageUrl: "assets/psikologi.jpg",
+                category: "Fakultas",
+                openHour: 8,
+                closeHour: 17,
+                description: "Fakultas Psikologi",
             }
         ];
 
+        let addedCount = 0;
+        let updatedCount = 0;
         for (const f of facilities) {
-            await prisma.facility.create({ data: f });
+            const exists = await prisma.facility.findFirst({ where: { name: f.name } });
+            if (!exists) {
+                await prisma.facility.create({ data: f });
+                addedCount++;
+            } else if (f.name === "Fakultas FMIPA" || f.name === "Fakultas Psikologi" || f.name === "Fakultas Keperawatan") {
+                await prisma.facility.update({
+                    where: { id: exists.id },
+                    data: { imageUrl: f.imageUrl }
+                });
+                updatedCount++;
+            }
         }
 
-        res.json({ message: 'Facilities seeded successfully' });
+        res.json({ message: `Facilities seeding complete. Added ${addedCount}, Updated ${updatedCount}.` });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });

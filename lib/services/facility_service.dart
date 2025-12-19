@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config.dart';
+
 class FacilityService {
-  static const String baseUrl = 'http://localhost:3000/api';
+  static String get baseUrl => '${AppConfig.baseUrl}';
 
   Future<List<dynamic>> getFacilities({String? query}) async {
     try {

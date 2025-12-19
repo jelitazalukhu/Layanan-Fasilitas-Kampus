@@ -13,16 +13,15 @@ class DetailFasilitasScreen extends StatefulWidget {
 }
 
 class _DetailFasilitasScreenState extends State<DetailFasilitasScreen> {
-  String selectedTab = "Ruang Kelas";
+  String selectedTab = "";
   final TextEditingController _searchController = TextEditingController();
   
   // Static cache to persist data across screen navigation
-  // Key: Facility Title (e.g., "Fakultas Vokasi") -> Value: Map of Categories to List of Items
+  // Key: Facility Title -> Value: Map of Categories to List of Items
   static final Map<String, Map<String, List<Map<String, dynamic>>>> _globalCache = {};
 
-  late List<Map<String, dynamic>> _ruangKelas;
-  late List<Map<String, dynamic>> _laboratorium;
-  late List<Map<String, dynamic>> _proyektor;
+  // Holds current facility data: { "Tab Name": [list of items] }
+  late Map<String, List<Map<String, dynamic>>> _facilityData;
 
   @override
   void initState() {
@@ -33,48 +32,118 @@ class _DetailFasilitasScreenState extends State<DetailFasilitasScreen> {
   void _initializeData() {
     // Check if data for this facility already exists in cache
     if (_globalCache.containsKey(widget.title)) {
-      final cached = _globalCache[widget.title]!;
-      _ruangKelas = cached['Ruang Kelas']!;
-      _laboratorium = cached['Laboratorium']!;
-      _proyektor = cached['Proyektor']!;
+      _facilityData = _globalCache[widget.title]!;
     } else {
-      // Generate new data if not in cache
-      _ruangKelas = List.generate(5, (i) => {
-        "nama": "Ruang ${widget.title} ${i + 1}",
-        "status": "KOSONG",
-        "jenis": "Ruang Kelas",
-        "lantai": 2, 
-      });
+      _facilityData = _generateDataForFacility(widget.title);
+      _globalCache[widget.title] = _facilityData;
+    }
 
-      _laboratorium = List.generate(3, (i) => {
-        "nama": "Lab ${widget.title} ${String.fromCharCode(65 + i)}",
-        "status": "KOSONG",
-        "jenis": "Laboratorium",
-      });
-
-      _proyektor = List.generate(5, (i) => {
-        "nama": "Proyektor ${i + 1}",
-        "status": "TERSEDIA",
-        "jenis": "Proyektor",
-      });
-
-      // Save to cache
-      _globalCache[widget.title] = {
-        'Ruang Kelas': _ruangKelas,
-        'Laboratorium': _laboratorium,
-        'Proyektor': _proyektor,
-      };
+    // Set initial selected tab to the first key
+    if (_facilityData.isNotEmpty) {
+      selectedTab = _facilityData.keys.first;
     }
   }
 
+  Map<String, List<Map<String, dynamic>>> _generateDataForFacility(String title) {
+    // 1. PERPUSTAKAAN
+    if (title.toLowerCase().contains("perpustakaan")) {
+      return {
+        "Ruang Baca": List.generate(4, (i) => {
+          "nama": "Ruang Baca ${String.fromCharCode(65 + i)}",
+          "status": "BUKA",
+          "jenis": "Ruang Baca",
+        }),
+        "Ruang Diskusi": List.generate(5, (i) => {
+          "nama": "Ruang Diskusi ${i + 1}",
+          "status": "KOSONG",
+          "jenis": "Ruang Diskusi",
+        }),
+        "Ruang Konferensi": [
+          {"nama": "Conference Room A", "status": "KOSONG", "jenis": "Ruang Konferensi"},
+          {"nama": "Conference Room B", "status": "TERPAKAI", "jenis": "Ruang Konferensi"},
+        ],
+        "Bilik Baca Individu": List.generate(6, (i) => {
+          "nama": "Rubelin ${i + 1}",
+          "status": "TERSEDIA",
+          "jenis": "Bilik Baca Individu",
+        }),
+      };
+    }
+
+    // 2. POLIKLINIK
+    if (title.toLowerCase().contains("poliklinik")) {
+      return {
+        "Poli Umum": List.generate(3, (i) => {
+          "nama": "Poli Umum ${i + 1}",
+          "status": "BUKA",
+          "jenis": "Poli Umum",
+        }),
+        "Poli Gigi": [
+          {"nama": "Poli Gigi 1", "status": "BUKA", "jenis": "Poli Gigi"},
+          {"nama": "Poli Gigi 2", "status": "ISTIRAHAT", "jenis": "Poli Gigi"},
+        ],
+        "Poli Spesialis": [
+          {"nama": "Poli Mata", "status": "BUKA", "jenis": "Poli Spesialis"},
+          {"nama": "Poli THT", "status": "BUKA", "jenis": "Poli Spesialis"},
+        ],
+        "Poli Konseling": [
+          {"nama": "Ruang Konseling", "status": "TERSEDIA", "jenis": "Poli Konseling"},
+        ],
+      };
+    }
+
+    // 3. MASJID
+    if (title.toLowerCase().contains("masjid")) {
+      return {
+        "Ruang Utama": [
+          {"nama": "Shaf Utama Pria", "status": "TERBUKA", "jenis": "Ruang Utama"},
+          {"nama": "Shaf Utama Wanita", "status": "TERBUKA", "jenis": "Ruang Utama"},
+        ],
+        "Aula Dakwah": [
+          {"nama": "Aula Dakwah Utama", "status": "KOSONG", "jenis": "Aula Dakwah"},
+        ],
+      };
+    }
+
+    // 4. AUDITORIUM
+    if (title.toLowerCase().contains("auditorium")) {
+      return {
+        "Main Hall": [
+          {"nama": "Auditorium Main Hall", "status": "KOSONG", "jenis": "Main Hall"},
+        ],
+        "Ruang VIP": [
+          {"nama": "Ruang Tunggu VIP", "status": "TERSEDIA", "jenis": "Ruang VIP"},
+          {"nama": "Ruang Persiapan", "status": "KOSONG", "jenis": "Ruang VIP"},
+        ],
+      };
+    }
+
+    // 5. DEFAULT (FAKULTAS & LAINNYA)
+    return {
+      "Ruang Kelas": List.generate(6, (i) => {
+        "nama": "Ruang Kelas ${title.replaceAll('Fakultas ', '')} ${i + 1}",
+        "status": "KOSONG",
+        "jenis": "Ruang Kelas", 
+      }),
+      "Laboratorium": List.generate(3, (i) => {
+        "nama": "Lab ${title.replaceAll('Fakultas ', '')} ${String.fromCharCode(65 + i)}",
+        "status": "KOSONG",
+        "jenis": "Laboratorium",
+      }),
+    };
+  }
+
   List<Map<String, dynamic>> get _dataTampil {
-    if (selectedTab == "Ruang Kelas") return _ruangKelas;
-    if (selectedTab == "Laboratorium") return _laboratorium;
-    return _proyektor;
+    if (selectedTab.isEmpty || !_facilityData.containsKey(selectedTab)) {
+      return [];
+    }
+    return _facilityData[selectedTab]!;
   }
 
   Future<void> _popupBooking(Map<String, dynamic> item) async {
-    final facilityId = widget.facilityData['id']; // Get parent facility ID
+    final facilityId = widget.facilityData != null 
+        ? widget.facilityData['id'] 
+        : 0; // Fallback if no parent data
 
     final result = await showDialog(
       context: context,
@@ -85,14 +154,20 @@ class _DetailFasilitasScreenState extends State<DetailFasilitasScreen> {
     );
 
     if (result == true) {
-      setState(() {
-        item['status'] = 'TERPINJAM';
-      });
+      if (mounted) {
+        setState(() {
+          item['status'] = 'TERPINJAM';
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (selectedTab.isEmpty && _facilityData.isNotEmpty) {
+      selectedTab = _facilityData.keys.first;
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF1FFF4),
       appBar: AppBar(
@@ -101,122 +176,106 @@ class _DetailFasilitasScreenState extends State<DetailFasilitasScreen> {
         elevation: 0,
         foregroundColor: Colors.black,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
           // Search Bar
-          TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: "Cari...",
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: "Cari...",
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
           ),
+          
           const SizedBox(height: 16),
           
-          // Tabs
+          // Dynamic Tabs
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: ["Ruang Kelas", "Laboratorium", "Proyektor"].map((tab) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(tab),
-                    selected: selectedTab == tab,
-                    onSelected: (val) {
-                      if (val) setState(() => selectedTab = tab);
-                    },
-                    selectedColor: const Color(0xFF065F46),
-                    labelStyle: TextStyle(
-                      color: selectedTab == tab ? Colors.white : Colors.black,
+              children: [
+                const SizedBox(width: 16),
+                ..._facilityData.keys.map((tab) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(tab),
+                      selected: selectedTab == tab,
+                      onSelected: (val) {
+                        if (val) setState(() => selectedTab = tab);
+                      },
+                      selectedColor: const Color(0xFF065F46),
+                      labelStyle: TextStyle(
+                        color: selectedTab == tab ? Colors.white : Colors.black,
+                      ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }),
+                const SizedBox(width: 16),
+              ],
             ),
           ),
+          
           const SizedBox(height: 16),
 
           // Content
-          if (selectedTab == "Proyektor")
-             GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: _dataTampil.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemBuilder: (_, i) {
-                final item = _dataTampil[i];
-                return Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: InkWell(
-                    onTap: () => _popupBooking(item),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.videocam, size: 40, color: Colors.green),
-                        const SizedBox(height: 8),
-                        Text(item["nama"], style: const TextStyle(fontWeight: FontWeight.bold)),
-                        Text(
-                          item["status"], 
-                          style: TextStyle(
-                            fontSize: 12, 
-                            color: item["status"] == "TERPINJAM" ? Colors.red : Colors.grey
-                          )
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            )
-          else
-            Column(
-              children: _dataTampil.map((item) {
+              itemBuilder: (context, index) {
+                final item = _dataTampil[index];
+                
+                // Customize Icon based on type
+                IconData icon;
+                if (item['jenis'].toString().contains("Poli")) icon = Icons.local_hospital;
+                else if (item['jenis'].toString().contains("Baca")) icon = Icons.menu_book;
+                else if (item['jenis'].toString().contains("Diskusi")) icon = Icons.groups;
+                else if (item['jenis'].toString().contains("Masjid") || item['jenis'].toString().contains("Shaf")) icon = Icons.mosque;
+                else if (item['jenis'].toString().contains("Dakwah")) icon = Icons.campaign;
+                else if (item['jenis'].toString().contains("Hall")) icon = Icons.theater_comedy;
+                else if (item['jenis'].toString().contains("Lab")) icon = Icons.science;
+                else icon = Icons.meeting_room;
+
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
-                    leading: Icon(
-                      selectedTab == "Ruang Kelas" ? Icons.meeting_room : Icons.science,
-                      size: 40, 
-                      color: Colors.green
-                    ),
+                    leading: Icon(icon, size: 40, color: Colors.green),
                     title: Text(item["nama"], style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text(
                       item["status"], 
                       style: TextStyle(
-                        color: item["status"] == "TERPINJAM" ? Colors.red : Colors.green, 
+                        color: (item["status"] == "TERPINJAM" || item["status"] == "TERPAKAI") ? Colors.red : Colors.green, 
                         fontWeight: FontWeight.bold
                       )
                     ),
                     trailing: ElevatedButton(
-                      onPressed: item["status"] == "TERPINJAM" ? null : () => _popupBooking(item),
+                      onPressed: (item["status"] == "TERPINJAM" || item["status"] == "TERPAKAI") ? null : () => _popupBooking(item),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: item["status"] == "TERPINJAM" ? Colors.grey : const Color(0xFF065F46),
+                        backgroundColor: (item["status"] == "TERPINJAM" || item["status"] == "TERPAKAI") ? Colors.grey : const Color(0xFF065F46),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                       child: Text(
-                        item["status"] == "TERPINJAM" ? "Dipinjam" : "Booking", 
+                        (item["status"] == "TERPINJAM" || item["status"] == "TERPAKAI") ? "Dipinjam" : "Booking", 
                         style: const TextStyle(color: Colors.white)
                       ),
                     ),
                   ),
                 );
-              }).toList(),
+              },
             ),
+          ),
         ],
       ),
     );

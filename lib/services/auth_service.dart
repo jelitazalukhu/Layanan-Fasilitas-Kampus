@@ -1,15 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config.dart';
 
 class AuthService {
   // Use 10.0.2.2 for Android emulator, localhost for iOS/Web.
-  // Since we are likely on Windows dev, localhost might work for desktop app, 
+  // Since we are likely on Windows dev, localhost might work for desktop app,
   // but if using emulator use 10.0.2.2.
-  // For safety, let's try generic localhost first or make it configurable. 
+  // For safety, let's try generic localhost first or make it configurable.
   // Given user is on Windows running 'flutter run -d windows', localhost is fine.
-  static const String baseUrl = 'http://localhost:3000/api/auth';
+  static String get baseUrl => '${AppConfig.baseUrl}/auth';
 
   Future<Map<String, dynamic>> register(String name, String email, String nim, String password) async {
     try {
@@ -112,7 +114,7 @@ class AuthService {
     }
   }
 
-  Future<bool> updateProfile(String name, String? password, {File? imageFile}) async {
+  Future<bool> updateProfile(String name, String? password, {XFile? imageFile}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
@@ -132,9 +134,11 @@ class AuthService {
       }
 
       if (imageFile != null) {
-        request.files.add(await http.MultipartFile.fromPath(
+        final bytes = await imageFile.readAsBytes();
+        request.files.add(http.MultipartFile.fromBytes(
           'avatar',
-          imageFile.path,
+          bytes,
+          filename: imageFile.name,
         ));
       }
 
