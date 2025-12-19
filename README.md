@@ -3,7 +3,7 @@
 ## Kelompok 7 :<br>
 1. Jelita Crisna Zalukhu (241712022)
 2. Maulia Revani Putri (241712009)
-3. Yatra Sima Kaputra (2312712119)
+3. Yatra Sima Kaputra (231712119)
 4. Argya Ariella (241712028)
 5. William Tanu Wijaya (241712036)
 
@@ -82,5 +82,6 @@ Panduan berikut menjelaskan langkah-langkah menjalankan aplikasi **CampusFind**.
    ```
 Jika Flutter tidak dikenali, pastikan Flutter sudah terinstall dan PATH telah dikonfigurasi.
    Jika device tidak muncul, periksa emulator atau pastikan perangkat fisik berada dalam mode developer.
+
 
 
