@@ -46,13 +46,35 @@ CampusFind  adalah aplikasi mobile berbasis Flutter yang dirancang untuk memudah
 - Emulator atau perangkat fisik Android untuk pengujian.
 - Git (opsional, jika clone dari repository).
 
-### 2. Menjalankan Aplikasi Flutter
+### 2. Setup Backend & Database (Wajib untuk Login/Register)
+1. Jalankan XAMPP
+- Start Apache dan MySQL dari XAMPP Control Panel.
+
+2. Import database MySQL
+- Buka http://localhost/phpmyadmin.
+- Buat database baru, misalnya: layanan_fasilitas_kampus.
+- Pilih database tersebut → tab Import → pilih file appfasilitaskampus.sql dari repo ini → klik Go.
+
+3. Letakkan file backend di htdocs
+- Copy folder backend/API (misal php_api/ atau nama folder yang kamu pakai) ke:
+C:\xampp\htdocs\Layanan-Fasilitas-Kampus\php_api (atau sesuai strukturmu).
+- Pastikan file koneksi database  
+- database: layanan_fasilitas_kampus (sesuai nama database yang kamu buat).
+
+4. Tes backend di browser
+- Contoh: buka http://localhost/Layanan-Fasilitas-Kampus/php_api/login.php.
+
+### 3. Menjalankan Aplikasi Flutter
 Panduan berikut menjelaskan langkah-langkah menjalankan aplikasi **CampusFind**.
 1. **Clone repository**  
    Salin project dari GitHub ke komputer:
    ```bash
    git clone https://github.com/jelitazalukhu/Layanan-Fasilitas-Kampus.git
-2. **Masuk ke folder project**
+2. **Buka terminal**
+- masuk ke folder backend
+   cd layanan-Fasilitas-Kampus/backend
+- ketik npm run dev
+2. ** Buka terminal lagi, Masuk ke folder project**
    Pindah ke direktori project:
    ```bash
    cd Layanan-Fasilitas-Kampus
@@ -82,6 +104,7 @@ Panduan berikut menjelaskan langkah-langkah menjalankan aplikasi **CampusFind**.
    ```
 Jika Flutter tidak dikenali, pastikan Flutter sudah terinstall dan PATH telah dikonfigurasi.
    Jika device tidak muncul, periksa emulator atau pastikan perangkat fisik berada dalam mode developer.
+
 
 
 
