@@ -5,6 +5,7 @@ import 'notification_screen.dart';
 import 'profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
+import '../Screens/peta_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -93,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.person_outline, color: Colors.black),
             onPressed: () {
-               Navigator.push(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const ProfileScreen()),
               );
@@ -182,7 +183,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DaftarFasilitasScreen(initialCategory: "Fakultas"),
+                        builder: (_) => const DaftarFasilitasScreen(
+                          initialCategory: "Fakultas",
+                        ),
                       ),
                     );
                   },
@@ -196,7 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DaftarFasilitasScreen(initialCategory: "Fasilitas Umum"),
+                        builder: (_) => const DaftarFasilitasScreen(
+                          initialCategory: "Fasilitas Umum",
+                        ),
                       ),
                     );
                   },
@@ -209,7 +214,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DaftarFasilitasScreen(initialCategory: "Masjid"),
+                        builder: (_) => const DaftarFasilitasScreen(
+                          initialCategory: "Masjid",
+                        ),
                       ),
                     );
                   },
@@ -223,7 +230,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DaftarFasilitasScreen(initialCategory: "Fasilitas Umum"),
+                        builder: (_) => const DaftarFasilitasScreen(
+                          initialCategory: "Fasilitas Umum",
+                        ),
                       ),
                     );
                   },
@@ -236,7 +245,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const DaftarFasilitasScreen(initialCategory: "Fasilitas Umum"),
+                        builder: (_) => const DaftarFasilitasScreen(
+                          initialCategory: "Fasilitas Umum",
+                        ),
                       ),
                     );
                   },
@@ -249,8 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            const HomeDummyScreen(title: "Peta Digital"),
+                        builder: (_) => const PetaScreen(),
                       ),
                     );
                   },
@@ -327,22 +337,6 @@ class FacilityCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class HomeDummyScreen extends StatelessWidget {
-  final String title;
-
-  const HomeDummyScreen({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: const Center(
-        child: Text("Coming Soon", textAlign: TextAlign.center),
       ),
     );
   }
